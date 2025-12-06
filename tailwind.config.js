@@ -19,7 +19,7 @@ export default {
         },
       },
       boxShadow: {
-        glow: '0 0 40px rgba(59, 130, 246, 0.25)',
+        glow: '0 0 40px rgba(255, 255, 255, 0.25)',
       },
     },
   },

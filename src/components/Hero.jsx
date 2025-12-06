@@ -2,12 +2,18 @@ const Hero = () => {
   return (
     <header className="isolate px-4 pt-12 pb-8 sm:pt-16 lg:pt-20">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-8 text-center">
-        <div className="relative w-full overflow-hidden rounded-[2.75rem] border border-white/10 bg-ink-900/60 shadow-glow">
+        <div
+          className="relative w-full overflow-hidden rounded-[2.75rem] border border-white/10 bg-ink-900/60 shadow-glow"
+          style={{ boxShadow: '0 0 50px rgba(255, 255, 255, 0.3)' }}
+        >
           <div
             className="relative flex min-h-[360px] flex-col items-center justify-center bg-cover bg-center"
-            style={{ backgroundImage: "url('/hero-grid.svg')" }}
+            style={{ backgroundImage: "url('/hero-texture.png')" }}
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-ink-900/30 to-ink-900" aria-hidden />
+            <div
+              className="absolute inset-0 bg-gradient-to-br from-black/60 via-ink-900/40 to-ink-900/80"
+              aria-hidden
+            />
             <img
               src="/logo-mark.svg"
               alt="WavyThought logo"
