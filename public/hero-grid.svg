@@ -1,0 +1,45 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0" stop-color="#020617"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="grid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0" stop-color="rgba(56,189,248,0.65)"/>
+      <stop offset="1" stop-color="rgba(59,130,246,0.15)"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <g stroke="url(#grid)" stroke-width="1">
+    <path d="M0 80H1920" opacity="0.35"/>
+    <path d="M0 160H1920" opacity="0.3"/>
+    <path d="M0 240H1920" opacity="0.25"/>
+    <path d="M0 320H1920" opacity="0.2"/>
+    <path d="M0 400H1920" opacity="0.15"/>
+    <path d="M0 480H1920" opacity="0.12"/>
+    <path d="M0 560H1920" opacity="0.1"/>
+    <path d="M0 640H1920" opacity="0.08"/>
+    <path d="M0 720H1920" opacity="0.06"/>
+    <path d="M0 800H1920" opacity="0.05"/>
+    <path d="M0 880H1920" opacity="0.04"/>
+    <path d="M0 960H1920" opacity="0.03"/>
+  </g>
+  <g stroke="url(#grid)" stroke-width="1">
+    <path d="M160 0V1080" opacity="0.3"/>
+    <path d="M320 0V1080" opacity="0.25"/>
+    <path d="M480 0V1080" opacity="0.2"/>
+    <path d="M640 0V1080" opacity="0.15"/>
+    <path d="M800 0V1080" opacity="0.12"/>
+    <path d="M960 0V1080" opacity="0.1"/>
+    <path d="M1120 0V1080" opacity="0.12"/>
+    <path d="M1280 0V1080" opacity="0.15"/>
+    <path d="M1440 0V1080" opacity="0.2"/>
+    <path d="M1600 0V1080" opacity="0.25"/>
+    <path d="M1760 0V1080" opacity="0.3"/>
+  </g>
+  <circle cx="420" cy="320" r="8" fill="#38BDF8" opacity="0.65"/>
+  <circle cx="640" cy="460" r="12" fill="#38BDF8" opacity="0.65"/>
+  <circle cx="920" cy="260" r="18" fill="#818CF8" opacity="0.5"/>
+  <circle cx="1400" cy="380" r="10" fill="#F472B6" opacity="0.55"/>
+  <circle cx="1680" cy="640" r="16" fill="#22D3EE" opacity="0.4"/>
+</svg>

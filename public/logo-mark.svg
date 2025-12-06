@@ -1,0 +1,20 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
+  <title>WavyThought logo</title>
+  <defs>
+    <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="50%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#F472B6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.9)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+  </defs>
+  <rect width="256" height="256" rx="64" fill="#070B12"/>
+  <circle cx="128" cy="110" r="90" fill="url(#glow)"/>
+  <path d="M36 152C62 112 90 112 120 152C150 192 178 192 206 152" stroke="url(#waveGradient)" stroke-width="32" stroke-linecap="round" fill="none"/>
+  <path d="M50 110C76 70 108 70 136 110C164 150 196 150 222 110" stroke="#fff" stroke-opacity="0.9" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <circle cx="96" cy="102" r="10" fill="#fff" fill-opacity="0.85"/>
+  <circle cx="164" cy="102" r="10" fill="#fff" fill-opacity="0.85"/>
+</svg>
