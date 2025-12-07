@@ -1,43 +1,65 @@
-const Hero = () => {
+import EggCanvas from './EggCanvas'
+
+const Hero = ({ pointer }) => {
   return (
-    <header className="isolate px-4 pt-12 pb-8 sm:pt-16 lg:pt-20">
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-8 text-center">
-        <div
-          className="relative w-full overflow-hidden rounded-[2.75rem] border border-white/10 bg-ink-900/60 shadow-glow"
-          style={{ boxShadow: '0 0 50px rgba(255, 255, 255, 0.3)' }}
-        >
-          <div
-            className="relative flex min-h-[360px] flex-col items-center justify-center bg-cover bg-center"
-            style={{ backgroundImage: "url('/hero-texture.png')" }}
-          >
-            <div
-              className="absolute inset-0 bg-gradient-to-br from-black/60 via-ink-900/40 to-ink-900/80"
-              aria-hidden
-            />
-            <img
-              src="/logo-mark.svg"
-              alt="WavyThought logo"
-              className="relative z-10 h-32 w-32 sm:h-40 sm:w-40 drop-shadow-[0_25px_50px_rgba(0,0,0,0.65)]"
-            />
-            <p className="relative z-10 mt-6 max-w-2xl px-6 font-display text-2xl text-white/80 sm:text-3xl">
-              We blend clean modern aesthetics with a tech-forward edge.
+    <section className="relative px-4 pt-10 pb-8 text-[#1f1b1f] sm:pt-16">
+      <div className="pointer-events-none absolute inset-0 hidden sm:block">
+        <img
+          src="/smiley faces.png"
+          alt="Smiley accents"
+          className="absolute -top-4 left-6 w-40 opacity-80 drop-shadow-[0_12px_30px_rgba(0,0,0,0.2)]"
+        />
+        <img
+          src="/smiley faces.png"
+          alt="Smiley accents"
+          className="absolute -top-10 right-10 w-56 opacity-70 drop-shadow-[0_20px_45px_rgba(0,0,0,0.2)]"
+        />
+        <img
+          src="/smiley faces.png"
+          alt="Smiley accents"
+          className="absolute top-24 left-1/2 w-32 -translate-x-1/2 opacity-60 drop-shadow-[0_15px_40px_rgba(0,0,0,0.15)]"
+        />
+      </div>
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
+        <div className="relative flex flex-col items-center gap-4 text-center">
+          <img
+            src="/Wavythought Clear Logo-01.png"
+            alt="WavyThought wordmark"
+            className="max-w-full"
+          />
+          <div className="rounded-full border border-[#f0e7ff] bg-white/80 px-6 py-3 text-xs uppercase tracking-[0.6em] text-[#b688dc]">
+            WavyThought Creative Studio
+          </div>
+          <p className="text-sm uppercase tracking-[0.4em] text-[#f06292]">
+            Playful minds - wavy ideas - dancing shadows
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start">
+          <div className="flex w-full items-center justify-center lg:w-2/5">
+            <div className="relative h-[240px] w-[240px] sm:h-[300px] sm:w-[300px]">
+              <EggCanvas pointer={pointer} />
+            </div>
+          </div>
+          <div className="w-full space-y-6 text-base leading-7 text-[#3c3c3c] lg:w-3/5">
+            <p>
+              WavyThought is a creative studio built on curiosity, play, and the joy of making. We
+              blend digital techniques with machines and materials to pull hidden patterns to the
+              surface—revealing more than meets the eye. Every piece carries layers, texture, and a
+              bit of the wobbling ideas that live in our heads until we carve, print, cut, or build
+              them into the world.
+            </p>
+            <p>
+              We create one-of-a-kind custom work, from small personal pieces to full room
+              installations, lighting, wall art, furniture, and beyond. You can commission something
+              entirely new or explore our existing Waves, already captured and ready for a new home.
+              Whatever form it takes, if it bends technology, craft, and imagination, it lives here
+              at WavyThought.
             </p>
           </div>
         </div>
-        <div className="space-y-3 px-2">
-          <p className="font-display text-xs uppercase tracking-[0.4em] text-slate-400">
-            Design / Technology / Strategy
-          </p>
-          <h1 className="font-display text-3xl text-slate-50 sm:text-4xl">
-            WavyThought Creative Studio
-          </h1>
-          <p className="text-base text-slate-300 sm:text-lg">
-            A single landing pad for partnerships, launches, and ongoing collaboration. Reach out
-            when you&apos;re ready to build something remarkable.
-          </p>
-        </div>
       </div>
-    </header>
+    </section>
   )
 }
 

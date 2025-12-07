@@ -9,7 +9,7 @@ const initialFormValues = {
 
 const ContactForm = () => {
   const [formValues, setFormValues] = useState(initialFormValues)
-  const [status, setStatus] = useState('idle') // idle | loading | success | error
+  const [status, setStatus] = useState('idle')
   const [feedback, setFeedback] = useState('')
 
   const handleChange = (event) => {
@@ -26,10 +26,9 @@ const ContactForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-
     if (!formValues.name.trim() || !formValues.email.trim() || !formValues.message.trim()) {
       setStatus('error')
-      setFeedback('Please complete all fields before sending your note.')
+      setFeedback('Please complete every field before sending your note.')
       return
     }
 
@@ -42,14 +41,12 @@ const ContactForm = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formValues),
       })
-
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))
         throw new Error(data?.message || 'Something unexpected happened.')
       }
-
       setStatus('success')
-      setFeedback('Thank you for reaching out - we will respond shortly.')
+      setFeedback('Thank you for the wave! We will respond shortly.')
       setFormValues(initialFormValues)
     } catch (error) {
       setStatus('error')
@@ -58,136 +55,107 @@ const ContactForm = () => {
   }
 
   return (
-    <section className="relative overflow-hidden px-4 pb-16 pt-4">
-      <div className="pointer-events-none absolute inset-x-0 top-16 flex justify-center" aria-hidden>
-        <div className="h-72 w-[900px] overflow-hidden rounded-[50%] bg-gradient-to-r from-orange-200/40 via-pink-200/40 to-amber-100/30 opacity-60 blur-[30px]">
-          <div className="relative h-full w-full">
-            <div className="wave-shape-1 absolute inset-x-0 top-6 h-24 w-full" />
-            <div className="wave-shape-2 absolute inset-x-0 top-24 h-24 w-full" />
-            <div className="wave-shape-3 absolute inset-x-0 top-40 h-24 w-full" />
-          </div>
-        </div>
+    <section className="relative px-4 py-20">
+      <div className="pointer-events-none absolute inset-0">
+        <img
+          src="/smiley faces.png"
+          alt="Smiley accent"
+          className="absolute -left-6 top-6 w-28 opacity-80 sm:w-36"
+        />
+        <img
+          src="/smiley faces.png"
+          alt="Smiley accent"
+          className="absolute right-6 bottom-1/3 w-24 rotate-[25deg] opacity-70 sm:w-32"
+        />
       </div>
-      <div className="pointer-events-none absolute inset-x-0 top-40 flex justify-center" aria-hidden>
-        <div className="h-64 w-[920px] overflow-hidden rounded-[50%] bg-gradient-to-r from-pink-100/40 via-transparent to-orange-100/30 opacity-60 blur-[45px]">
-          <div className="relative h-full w-full">
-            <div className="wave-shape-4 absolute inset-x-0 top-10 h-20 w-full" />
-            <div className="wave-shape-5 absolute inset-x-0 top-28 h-20 w-full" />
-          </div>
-        </div>
+      <div className="mx-auto max-w-3xl text-center text-[#1f1b1f]">
+        <h2 className="font-display text-3xl">Get in touch</h2>
+        <p className="mt-2 text-base text-[#5c5a60]">
+          Custom projects, inquiries and any other wavy thoughts or ideas are welcome.
+        </p>
       </div>
-      <div
-        className="pointer-events-none absolute inset-x-0 top-72 h-56 bg-gradient-to-t from-pink-200/10 via-transparent to-transparent"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-ink-900 via-ink-900/70 to-transparent opacity-70"
-        aria-hidden
-      />
-      <div className="mx-auto max-w-3xl text-center">
-        <div className="space-y-3">
-          <h2 className="font-display text-3xl text-white sm:text-4xl">Let&apos;s build together</h2>
-          <p className="text-base text-slate-300">
-            Share a bit about your project and we&apos;ll connect from{' '}
-            <span className="text-white">info@wavythought.com</span>.
-          </p>
-        </div>
 
+      <div className="relative mx-auto mt-10 max-w-3xl">
+        <div className="absolute -left-8 top-1/2 hidden w-16 -translate-y-1/2 sm:block">
+          <img src="/Single smile.png" alt="Single smile accent" className="w-full" />
+        </div>
         <form
           onSubmit={handleSubmit}
-          className="relative mt-10 overflow-hidden rounded-[34px] border border-white/20 bg-gradient-to-br from-white/20 via-white/8 to-white/3 p-[1px] shadow-[0_35px_90px_rgba(4,6,10,0.45)] backdrop-blur-[42px] before:pointer-events-none before:absolute before:inset-[-30%] before:bg-gradient-to-b before:from-white/25 before:via-transparent before:to-white/15 before:opacity-40 before:blur-3xl before:content-['']"
+          className="relative overflow-hidden rounded-[42px] border border-[#ffd9ff] bg-gradient-to-br from-[#fff4b0] via-[#ffbef4] to-[#c7a2ff] p-[2px] shadow-[0_25px_80px_rgba(31,27,31,0.2)]"
         >
-          <div
-            className="pointer-events-none absolute -left-20 top-24 h-48 w-48 rounded-full bg-gradient-to-br from-orange-100 via-pink-100 to-pink-300 opacity-60 blur-[60px]"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute -right-16 bottom-10 h-40 w-56 rounded-[999px] bg-gradient-to-br from-pink-200 via-orange-200 to-amber-200 opacity-50 blur-[70px]"
-            aria-hidden
-          />
-          <div className="relative space-y-6 rounded-[32px] bg-gradient-to-br from-white/12 via-white/4 to-white/0 p-8 text-left">
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium tracking-wide text-slate-200">
-              Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              placeholder="Name"
-              className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white placeholder:text-slate-400 focus-visible:border-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-              value={formValues.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium tracking-wide text-slate-200">
-              Email Address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="Email address"
-              className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white placeholder:text-slate-400 focus-visible:border-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-              value={formValues.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="message" className="text-sm font-medium tracking-wide text-slate-200">
-              Project Notes
-            </label>
-            <textarea
-              id="message"
-              name="message"
-              placeholder="Message"
-              rows={5}
-              className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white placeholder:text-slate-400 focus-visible:border-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-              value={formValues.message}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <label className="flex items-start gap-3 rounded-2xl border border-transparent px-2 py-1 text-sm text-slate-300 hover:text-white">
-            <input
-              type="checkbox"
-              name="subscribe"
-              checked={formValues.subscribe}
-              onChange={handleChange}
-              className="mt-1 h-5 w-5 rounded-md border-white/25 bg-white/10 text-white focus-visible:outline-white/60"
-            />
-            <span className="leading-relaxed">
-              Sign me up for updates, promotions, and insights from the WavyThought team.
-            </span>
-          </label>
-
-          <div className="space-y-3">
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className="w-full rounded-2xl bg-white/70 px-6 py-3 text-lg font-semibold uppercase tracking-wide text-ink-900 transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {status === 'loading' ? 'Sending...' : 'Send'}
-            </button>
-            <p className="text-center text-xs text-slate-400">
-              We keep your details private and respond within one business day.
-            </p>
-            <p className="text-center text-sm font-medium" aria-live="polite">
-              {feedback && (
-                <span className={status === 'error' ? 'text-rose-300' : 'text-emerald-300'}>
-                  {feedback}
+          <div className="rounded-[38px] bg-white/85 p-8 sm:p-10">
+            <div className="flex flex-col gap-4">
+              {[
+                { id: 'name', label: 'Name', type: 'text', placeholder: 'Name' },
+                { id: 'email', label: 'Email', type: 'email', placeholder: 'Email' },
+              ].map((field) => (
+                <label key={field.id} className="text-left text-sm font-semibold text-[#5c5a60]">
+                  {field.label}
+                  <input
+                    id={field.id}
+                    name={field.id}
+                    type={field.type}
+                    placeholder={field.placeholder}
+                    value={formValues[field.id]}
+                    onChange={handleChange}
+                    className="mt-2 w-full rounded-2xl border border-[#e5d5ff] bg-white px-4 py-3 text-base text-[#1f1b1f] placeholder:text-[#b1a8c3] focus-visible:border-[#ff9ae1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb6f5]/40"
+                    required
+                  />
+                </label>
+              ))}
+              <label className="text-left text-sm font-semibold text-[#5c5a60]">
+                What are your wavy thoughts?
+                <textarea
+                  id="message"
+                  name="message"
+                  rows={4}
+                  placeholder="Share your idea here"
+                  value={formValues.message}
+                  onChange={handleChange}
+                  className="mt-2 w-full rounded-2xl border border-[#e5d5ff] bg-white px-4 py-3 text-base text-[#1f1b1f] placeholder:text-[#b1a8c3] focus-visible:border-[#ff9ae1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb6f5]/40"
+                  required
+                />
+              </label>
+            </div>
+            <label className="mt-4 flex items-center gap-3 text-sm text-[#5c5a60]">
+              <span className="relative inline-flex h-6 w-6 items-center justify-center">
+                <input
+                  type="checkbox"
+                  name="subscribe"
+                  checked={formValues.subscribe}
+                  onChange={handleChange}
+                  className="peer absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full border border-[#ff9ae1] bg-white"
+                />
+                <span className="pointer-events-none flex h-full w-full items-center justify-center rounded-full bg-white text-xs text-[#ff9ae1] transition-opacity peer-checked:opacity-0">
+                  +
                 </span>
-              )}
-            </p>
-          </div>
+                <img
+                  src="/Single smile.png"
+                  alt="Smile active"
+                  className="pointer-events-none h-5 w-5 opacity-0 transition-opacity peer-checked:opacity-100"
+                />
+              </span>
+              Sign me up for updates and promotions from WavyThought
+            </label>
+            <div className="mt-6 space-y-3">
+              <button
+                type="submit"
+                disabled={status === 'loading'}
+                className="w-full rounded-full border border-white/60 bg-[#ff9ae1] px-6 py-3 text-base font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-white hover:text-[#ff9ae1] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {status === 'loading' ? 'Sending…' : 'Send'}
+              </button>
+              <p className="text-center text-sm text-[#917da7]">
+                {feedback ||
+                  'We usually reply within one business day. Thanks for sharing your wavy thoughts.'}
+              </p>
+            </div>
           </div>
         </form>
+      </div>
+      <div className="mt-12 text-center text-sm text-[#5c5a60]">
+        <p>Stop by and give us a wave</p>
+        <p className="mt-1 font-semibold">Instagram · Hello@wavythought.com</p>
       </div>
     </section>
   )
