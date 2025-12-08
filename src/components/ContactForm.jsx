@@ -8,7 +8,7 @@ const initialFormValues = {
 }
 
 const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit'
-const DEFAULT_WEB3FORMS_ACCESS_KEY = 'c33f1cf1-691e-462d-b2f8-08e9cd51de2'
+const DEFAULT_WEB3FORMS_ACCESS_KEY = 'c33f1cf1-691e-462d-b2f8-0d0c9cd51de2'
 
 const ContactForm = ({ isDark = false }) => {
   const [formValues, setFormValues] = useState(initialFormValues)
