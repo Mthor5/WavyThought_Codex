@@ -13,7 +13,7 @@ WavyThought_Codex is the living landing page for WavyThought's creative studio. 
 
 ## Getting Started
 1. **Install dependencies:** `npm install`
-2. **Configure environment:** Duplicate `.env.example` to `.env`, add your `VITE_WEB3FORMS_ACCESS_KEY` (from [web3forms.com](https://web3forms.com/)), optionally set `VITE_CONTACT_ENDPOINT` (e.g. `http://localhost:4000/api/contact`) if you plan to rely on the backend relay, and fill in SMTP credentials for that relay.
+2. **Configure environment:** Duplicate `.env.example` to `.env`, replace the default public `VITE_WEB3FORMS_ACCESS_KEY` with your personal key from [web3forms.com](https://web3forms.com/), optionally set `VITE_CONTACT_ENDPOINT` (e.g. `http://localhost:4000/api/contact`) if you plan to rely on the backend relay, and fill in SMTP credentials for that relay.
 3. **Run the backend:** `npm run dev:server` (defaults to `http://localhost:4000`)
 4. **Run the frontend:** In another terminal, `npm run dev` and open the provided Vite URL (usually `http://localhost:5173`).
 5. **Build for production (optional):** `npm run build`

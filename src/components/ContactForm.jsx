@@ -8,12 +8,13 @@ const initialFormValues = {
 }
 
 const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit'
+const DEFAULT_WEB3FORMS_ACCESS_KEY = 'c33f1cf1-691e-462d-b2f8-08e9cd51de2'
 
 const ContactForm = ({ isDark = false }) => {
   const [formValues, setFormValues] = useState(initialFormValues)
   const [status, setStatus] = useState('idle')
   const [feedback, setFeedback] = useState('')
-  const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY
+  const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || DEFAULT_WEB3FORMS_ACCESS_KEY
   const fallbackEndpoint = import.meta.env.VITE_CONTACT_ENDPOINT || '/api/contact'
   const shouldUseWeb3Forms = Boolean(accessKey)
 
