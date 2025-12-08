@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Hero from './components/Hero'
 import WorkSamples from './components/WorkSamples'
 import ContactForm from './components/ContactForm'
@@ -6,6 +6,15 @@ import ContactForm from './components/ContactForm'
 const App = () => {
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
   const [lightsOff, setLightsOff] = useState(false)
+
+  useEffect(() => {
+    const { body } = document
+    if (!body) return undefined
+    body.classList.toggle('lights-off', lightsOff)
+    return () => {
+      body.classList.remove('lights-off')
+    }
+  }, [lightsOff])
 
   const handleMove = (event) => {
     const x = (event.clientX / window.innerWidth) * 2 - 1
@@ -15,14 +24,15 @@ const App = () => {
 
   return (
     <div
-      className={`min-h-screen ${lightsOff ? 'bg-[#1b1a20] text-white transition-colors' : 'bg-[#fdfcfc] text-[#1f1b1f]'} `}
+      className={`min-h-screen pt-24 sm:pt-20 ${lightsOff ? 'bg-[#1b1a20] text-white transition-colors' : 'bg-[#fdfcfc] text-[#1f1b1f]'} `}
       onPointerMove={handleMove}
       onPointerLeave={() => setPointer({ x: 0, y: 0 })}
     >
-      <div className="flex justify-end px-6 pt-6">
+      <div className="fixed right-4 top-4 z-50 flex justify-end px-6 sm:right-6">
         <button
           type="button"
           onClick={() => setLightsOff((prev) => !prev)}
+          aria-pressed={lightsOff}
           className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${
             lightsOff
               ? 'border-white/60 bg-white/10 text-white hover:bg-white/20'

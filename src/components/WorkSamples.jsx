@@ -13,10 +13,17 @@ const workSamples = [
   '_MG_7324 copy.JPG',
 ]
 
+const getVisibleCount = () => {
+  if (typeof window === 'undefined') return 4
+  if (window.innerWidth < 640) return 1
+  if (window.innerWidth < 1024) return 2
+  return 4
+}
+
 const WorkSamples = ({ isDark = false }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [activeImage, setActiveImage] = useState(null)
-  const visibleCount = 4
+  const [visibleCount, setVisibleCount] = useState(getVisibleCount)
   const totalSamples = workSamples.length
   const shouldAnimate = totalSamples > visibleCount
 
@@ -29,6 +36,15 @@ const WorkSamples = ({ isDark = false }) => {
     () => (shouldAnimate ? [...workSamples, ...workSamples] : workSamples),
     [shouldAnimate]
   )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const handleResize = () => {
+      setVisibleCount(getVisibleCount())
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     if (!isModalOpen && !activeImage) return
@@ -131,12 +147,12 @@ const WorkSamples = ({ isDark = false }) => {
           onPointerLeave={handlePointerLeave}
           onPointerMove={handlePointerMove}
         >
-          <div className="flex -mx-3" ref={sliderRef}>
+          <div className="flex -mx-2 sm:-mx-3" ref={sliderRef}>
             {sliderSamples.map((sample, index) => (
               <div
                 key={`${sample}-${index}`}
-                className="w-full flex-shrink-0 px-3"
-                style={{ flex: '0 0 25%' }}
+                className="w-full flex-shrink-0 px-2 sm:px-3"
+                style={{ flex: `0 0 ${100 / visibleCount}%` }}
               >
                 <div className="group flex h-full flex-col items-center justify-center rounded-[32px] bg-transparent transition hover:-translate-y-1">
                   <div
@@ -170,18 +186,18 @@ const WorkSamples = ({ isDark = false }) => {
       </div>
       {isModalOpen && (
         <div
-          className={`fixed inset-0 z-40 px-4 py-10 backdrop-blur transition ${modalOverlayClasses}`}
+          className={`fixed inset-0 z-40 flex items-center justify-center px-3 py-6 backdrop-blur transition sm:px-4 sm:py-10 ${modalOverlayClasses}`}
           onClick={() => setIsModalOpen(false)}
         >
           <div
-            className={`relative mx-auto flex h-full max-w-6xl flex-col rounded-[42px] p-8 transition-colors ${modalPanelClasses}`}
+            className={`relative mx-auto flex h-full w-full max-w-6xl flex-col rounded-[28px] p-4 transition-colors sm:rounded-[42px] sm:p-8 ${modalPanelClasses}`}
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               aria-label="Close gallery"
               onClick={() => setIsModalOpen(false)}
-              className={`absolute right-6 top-6 h-10 w-10 rounded-full text-xl font-semibold transition ${modalCloseButtonClasses}`}
+              className={`absolute right-4 top-4 h-10 w-10 rounded-full text-xl font-semibold transition sm:right-6 sm:top-6 ${modalCloseButtonClasses}`}
             >
               ×
             </button>
@@ -196,11 +212,11 @@ const WorkSamples = ({ isDark = false }) => {
               A glimpse at the latest pieces.
             </p>
             <div
-              className={`mt-8 flex-1 overflow-y-auto rounded-[32px] p-6 ${
+              className={`glass-scroll mt-6 flex-1 overflow-y-auto rounded-[28px] p-4 sm:mt-8 sm:rounded-[32px] sm:p-6 ${
                 isDark ? 'text-white' : 'text-[#1f1b1f]'
               } ${modalGalleryWrapperClasses}`}
             >
-              <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
                 {workSamples.map((sample) => (
                   <div
                     key={`grid-${sample}`}

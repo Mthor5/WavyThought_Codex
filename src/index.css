@@ -18,6 +18,12 @@ body {
   min-height: 100vh;
   background: #fdfcfc;
   font-family: 'Nunito', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  scrollbar-gutter: stable both-edges;
+}
+
+body.lights-off {
+  background: #1b1a20;
+  color: #fdfcfc;
 }
 
 #root {
@@ -27,4 +33,37 @@ body {
 ::selection {
   background: rgba(255, 105, 180, 0.35);
   color: #1f1b1f;
+}
+
+body,
+.glass-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 27, 31, 0.35) transparent;
+}
+
+body.lights-off,
+body.lights-off .glass-scroll {
+  scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
+}
+
+body::-webkit-scrollbar,
+.glass-scroll::-webkit-scrollbar {
+  width: 9px;
+}
+
+body::-webkit-scrollbar-track,
+.glass-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body::-webkit-scrollbar-thumb,
+.glass-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(31, 27, 31, 0.38);
+  border-radius: 999px;
+  border: 2px solid transparent;
+}
+
+body.lights-off::-webkit-scrollbar-thumb,
+body.lights-off .glass-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.55);
 }
