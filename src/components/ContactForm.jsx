@@ -59,6 +59,7 @@ const ContactForm = ({ isDark = false }) => {
   const submitViaWeb3Forms = async () => {
     const payload = new FormData()
     payload.append('access_key', accessKey)
+    payload.append('apikey', accessKey)
     payload.append('from_name', 'WavyThought Website')
     payload.append('subject', `New inquiry from ${formValues.name}`)
     payload.append('reply_to', formValues.email)
