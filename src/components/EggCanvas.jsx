@@ -17,6 +17,8 @@ const EggModel = ({ pointer }) => {
 
   const baseRotationY = Math.PI / 2
 
+  const floatOffsetY = 0.8
+
   useFrame((_, delta) => {
     if (!group.current) return
     const targetRotY = baseRotationY + pointer.x * 0.9
@@ -25,16 +27,16 @@ const EggModel = ({ pointer }) => {
     group.current.rotation.x += (targetRotX - group.current.rotation.x) * 0.25 * (1 + delta * 30)
 
     const targetX = pointer.x * 0.4
-    const targetY = pointer.y * 0.2
+    const targetY = floatOffsetY + pointer.y * 0.2
     group.current.position.x += (targetX - group.current.position.x) * 0.25 * (1 + delta * 30)
     group.current.position.y += (targetY - group.current.position.y) * 0.25 * (1 + delta * 30)
   })
 
-  return <primitive ref={group} object={scene} dispose={null} scale={440} />
+  return <primitive ref={group} object={scene} dispose={null} scale={310} />
 }
 
 const EggCanvas = ({ pointer }) => {
-  const cameraPosition = useMemo(() => [0, 0.4, 14], [])
+  const cameraPosition = useMemo(() => [0, 0.4, 18], [])
 
   return (
     <Canvas
@@ -50,11 +52,11 @@ const EggCanvas = ({ pointer }) => {
         <spotLight position={[0, 5, 5]} intensity={0.35} penumbra={1} angle={0.8} color="#ffd7ef" />
         <EggModel pointer={pointer} />
         <ContactShadows
-          position={[0, -3.8, 0]}
-          opacity={0.12}
-          blur={4.5}
-          scale={16}
-          far={4.5}
+          position={[0, -4.6, 0]}
+          opacity={0.14}
+          blur={5.2}
+          scale={18}
+          far={6}
           color="#020205"
         />
         <Environment preset="studio" />

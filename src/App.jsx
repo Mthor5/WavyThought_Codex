@@ -21,8 +21,14 @@ const App = () => {
       <Hero pointer={pointer} />
       <WorkSamples />
       <ContactForm />
-      <footer className="px-6 pb-16 pt-8 text-center text-xs uppercase tracking-[0.3em] text-[#3c3c3c]">
-        ©2025 WavyThought LLC. All rights reserved.
+      <footer className="px-6 pb-16 pt-12 text-xs text-[#3c3c3c]">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 text-center uppercase tracking-[0.35em] sm:flex-row sm:items-start sm:justify-between sm:text-left">
+          <p>&copy; 2025 WAVYTHOUGHT LLC. ALL RIGHTS RESERVED.</p>
+          <div className="text-center text-[#1f1b1f] sm:text-right">
+            <p>Stop by and give us a wave</p>
+            <p className="mt-2 text-[#3c3c3c]">Instagram | Hello@wavythought.com</p>
+          </div>
+        </div>
       </footer>
     </div>
   )
