@@ -7,10 +7,13 @@ const initialFormValues = {
   subscribe: true,
 }
 
+const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit'
+
 const ContactForm = ({ isDark = false }) => {
   const [formValues, setFormValues] = useState(initialFormValues)
   const [status, setStatus] = useState('idle')
   const [feedback, setFeedback] = useState('')
+  const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target
@@ -32,21 +35,41 @@ const ContactForm = ({ isDark = false }) => {
       return
     }
 
+    if (!accessKey) {
+      setStatus('error')
+      setFeedback('Contact form is temporarily unavailable. Missing Web3Forms access key.')
+      return
+    }
+
     setStatus('loading')
     setFeedback('Sending your message...')
 
     try {
-      const response = await fetch('/api/contact', {
+      const payload = new FormData()
+      payload.append('access_key', accessKey)
+      payload.append('from_name', 'WavyThought Website')
+      payload.append('subject', `New inquiry from ${formValues.name}`)
+      payload.append('reply_to', formValues.email)
+      payload.append('name', formValues.name)
+      payload.append('email', formValues.email)
+      payload.append('message', formValues.message)
+      payload.append('subscribe', formValues.subscribe ? 'Yes, please add me' : 'No, thanks')
+
+      const response = await fetch(WEB3FORMS_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formValues),
+        headers: {
+          Accept: 'application/json',
+        },
+        body: payload,
       })
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))
         throw new Error(data?.message || 'Something unexpected happened.')
       }
+      const result = await response.json()
+      const successMessage = result?.message || 'Thank you for the wave! We will respond shortly.'
       setStatus('success')
-      setFeedback('Thank you for the wave! We will respond shortly.')
+      setFeedback(successMessage)
       setFormValues(initialFormValues)
     } catch (error) {
       setStatus('error')
@@ -78,9 +101,15 @@ const ContactForm = ({ isDark = false }) => {
         </div>
         <form
           onSubmit={handleSubmit}
-          className="relative overflow-hidden rounded-[48px] border border-white/70 bg-gradient-to-br from-[#ffe48f] via-[#ffb4f3] to-[#c179ff] p-[1.5px] shadow-[0_45px_120px_rgba(31,27,31,0.25)] sm:ml-12 sm:mr-4"
+          className={`relative overflow-hidden rounded-[48px] border border-white/70 p-[1.5px] shadow-[0_45px_120px_rgba(31,27,31,0.25)] sm:ml-12 sm:mr-4 ${
+            isDark ? 'bg-gradient-to-br from-[#292734] via-[#28243a] to-[#1b1a20]' : 'bg-gradient-to-br from-[#ffe48f] via-[#ffb4f3] to-[#c179ff]'
+          }`}
         >
-          <div className="m-3 rounded-[36px] bg-gradient-to-b from-white/75 via-white/65 to-white/45 p-8 backdrop-blur-[2px] sm:m-4 sm:p-12">
+          <div
+            className={`m-3 rounded-[36px] p-8 backdrop-blur-[2px] sm:m-4 sm:p-12 ${
+              isDark ? 'bg-white/5' : 'bg-gradient-to-b from-white/75 via-white/65 to-white/45'
+            }`}
+          >
             <div className="flex flex-col gap-6">
               {[
                 { id: 'name', label: 'Name', type: 'text', placeholder: 'Name' },
@@ -100,9 +129,11 @@ const ContactForm = ({ isDark = false }) => {
                     placeholder={field.placeholder}
                     value={formValues[field.id]}
                     onChange={handleChange}
-                    className={`mt-2 w-full rounded-[28px] border border-white/60 bg-white/70 px-6 py-3 text-base ${
-                      isDark ? 'text-[#1f1b1f]' : 'text-[#1f1b1f]'
-                    } placeholder:text-[#c6a7d9] shadow-[0_10px_35px_rgba(255,120,210,0.18)] transition focus-visible:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70`}
+                    className={`mt-2 w-full rounded-[28px] border border-white/60 px-6 py-3 text-base shadow-[0_10px_35px_rgba(255,120,210,0.18)] transition focus-visible:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
+                      isDark
+                        ? 'bg-white/10 text-white placeholder:text-white/60'
+                        : 'bg-white/70 text-[#1f1b1f] placeholder:text-[#c6a7d9]'
+                    }`}
                     required
                   />
                 </label>
@@ -120,19 +151,31 @@ const ContactForm = ({ isDark = false }) => {
                   placeholder="Share your idea here"
                   value={formValues.message}
                   onChange={handleChange}
-                  className="mt-2 w-full rounded-[28px] border border-white/60 bg-white/60 px-6 py-3 text-base text-[#1f1b1f] placeholder:text-[#c6a7d9] shadow-[0_10px_35px_rgba(255,120,210,0.18)] transition focus-visible:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                  className={`mt-2 w-full rounded-[28px] border border-white/60 px-6 py-3 text-base shadow-[0_10px_35px_rgba(255,120,210,0.18)] transition focus-visible:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
+                    isDark
+                      ? 'bg-white/10 text-white placeholder:text-white/60'
+                      : 'bg-white/60 text-[#1f1b1f] placeholder:text-[#c6a7d9]'
+                  }`}
                   required
                 />
               </label>
             </div>
-            <label className={`mt-6 flex items-center gap-4 text-sm ${isDark ? 'text-white/80' : 'text-[#6c5e7d]'}`}>
-              <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-[0_10px_35px_rgba(0,0,0,0.12)]">
+            <label
+              className={`mt-6 flex items-center gap-4 text-sm ${isDark ? 'text-white/80' : 'text-[#6c5e7d]'}`}
+            >
+              <span
+                className={`relative inline-flex h-10 w-10 items-center justify-center rounded-full border px-2 ${
+                  isDark
+                    ? 'border-white/60 bg-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.4)]'
+                    : 'border-white/60 bg-white/70 shadow-[0_10px_35px_rgba(255,120,210,0.18)]'
+                }`}
+              >
                 <input
                   type="checkbox"
                   name="subscribe"
                   checked={formValues.subscribe}
                   onChange={handleChange}
-                  className="peer absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full border border-[#ff9ae1]/70 bg-transparent"
+                  className="peer absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full"
                 />
                 <span className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity peer-checked:opacity-100">
                   <img src="/Single smile.png" alt="Smile active" className="h-7 w-7 object-contain" />
