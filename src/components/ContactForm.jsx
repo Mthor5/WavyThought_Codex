@@ -14,7 +14,8 @@ const ContactForm = ({ isDark = false }) => {
   const [formValues, setFormValues] = useState(initialFormValues)
   const [status, setStatus] = useState('idle')
   const [feedback, setFeedback] = useState('')
-  const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || DEFAULT_WEB3FORMS_ACCESS_KEY
+  const rawAccessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || DEFAULT_WEB3FORMS_ACCESS_KEY
+  const accessKey = rawAccessKey?.trim() || ''
   const fallbackEndpoint = import.meta.env.VITE_CONTACT_ENDPOINT || '/api/contact'
   const shouldUseWeb3Forms = Boolean(accessKey)
 
