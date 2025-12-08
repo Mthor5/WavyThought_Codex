@@ -103,6 +103,19 @@ const WorkSamples = ({ isDark = false }) => {
     const driftRange = (100 / visibleCount) * 0.4
     targetDriftRef.current = (relativeX - 0.5) * driftRange
   }
+
+  const modalOverlayClasses = isDark ? 'bg-[#050308]/65' : 'bg-white/40'
+  const modalPanelClasses = isDark
+    ? 'bg-white/5 text-white shadow-[0_50px_140px_rgba(0,0,0,0.65)] border border-white/20 backdrop-blur-2xl'
+    : 'bg-white/50 text-[#1b1a1e] shadow-[0_40px_120px_rgba(31,27,31,0.2)] border border-white/40 backdrop-blur-2xl'
+  const modalCloseButtonClasses = isDark
+    ? 'border-white/40 text-white hover:bg-white/10 bg-black/30'
+    : 'border-white/60 text-[#1b1a1e] hover:bg-white/40 bg-white/30'
+  const modalGalleryWrapperClasses = isDark ? 'bg-white/5' : 'bg-white/40'
+  const modalGridCardClasses = isDark
+    ? 'border-white/15 bg-white/5 shadow-[0_25px_60px_rgba(0,0,0,0.4)] hover:shadow-[0_35px_80px_rgba(0,0,0,0.55)]'
+    : 'border-white/60 bg-white/20 shadow-[0_25px_60px_rgba(31,27,31,0.12)] hover:shadow-[0_35px_80px_rgba(31,27,31,0.2)]'
+
   return (
     <section className="px-4 py-16">
       <div className={`mx-auto max-w-5xl text-center ${isDark ? 'text-white' : 'text-[#1f1b1f]'}`}>
@@ -127,7 +140,7 @@ const WorkSamples = ({ isDark = false }) => {
               >
                 <div className="group flex h-full flex-col items-center justify-center rounded-[32px] bg-transparent transition hover:-translate-y-1">
                   <div
-                    className="relative w-full overflow-hidden rounded-[26px] border-[3px] border-white bg-white cursor-pointer"
+                    className="relative w-full overflow-hidden rounded-[26px] border border-white/60 bg-white/20 backdrop-blur-sm transition hover:border-white cursor-pointer"
                     onClick={() => setActiveImage(sample)}
                   >
                     <img
@@ -157,33 +170,41 @@ const WorkSamples = ({ isDark = false }) => {
       </div>
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-40 bg-white/92 px-4 py-10 backdrop-blur"
+          className={`fixed inset-0 z-40 px-4 py-10 backdrop-blur transition ${modalOverlayClasses}`}
           onClick={() => setIsModalOpen(false)}
         >
           <div
-            className="relative mx-auto flex h-full max-w-6xl flex-col rounded-[42px] bg-white p-8 shadow-[0_40px_120px_rgba(31,27,31,0.25)]"
+            className={`relative mx-auto flex h-full max-w-6xl flex-col rounded-[42px] p-8 transition-colors ${modalPanelClasses}`}
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               aria-label="Close gallery"
               onClick={() => setIsModalOpen(false)}
-              className="absolute right-6 top-6 h-10 w-10 rounded-full border border-[#e0d7f5] text-xl font-semibold text-[#5c5a60] transition hover:bg-[#f7f4ff]"
+              className={`absolute right-6 top-6 h-10 w-10 rounded-full text-xl font-semibold transition ${modalCloseButtonClasses}`}
             >
               ×
             </button>
-            <h3 className="text-center font-rounded text-xl uppercase tracking-[0.3em] text-[#1b1a1e]">
+            <h3
+              className={`text-center font-rounded text-xl uppercase tracking-[0.3em] ${
+                isDark ? 'text-white' : 'text-[#1b1a1e]'
+              }`}
+            >
               WavyThoughts
             </h3>
-            <p className="mt-2 text-center text-sm text-[#5c5a60]">
+            <p className={`mt-2 text-center text-sm ${isDark ? 'text-white/70' : 'text-[#5c5a60]'}`}>
               A glimpse at the latest pieces.
             </p>
-            <div className="mt-8 flex-1 overflow-y-auto rounded-[32px] bg-[#f8f8fb] p-6">
+            <div
+              className={`mt-8 flex-1 overflow-y-auto rounded-[32px] p-6 ${
+                isDark ? 'text-white' : 'text-[#1f1b1f]'
+              } ${modalGalleryWrapperClasses}`}
+            >
               <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
                 {workSamples.map((sample) => (
                   <div
                     key={`grid-${sample}`}
-                    className="group overflow-hidden rounded-[24px] border border-white/60 bg-white shadow-[0_25px_60px_rgba(31,27,31,0.12)] cursor-pointer transition duration-300 hover:-translate-y-2 hover:shadow-[0_35px_80px_rgba(31,27,31,0.2)]"
+                    className={`group overflow-hidden rounded-[24px] backdrop-blur-sm cursor-pointer transition duration-300 hover:-translate-y-2 ${modalGridCardClasses}`}
                     onClick={() => setActiveImage(sample)}
                   >
                     <img
@@ -204,18 +225,18 @@ const WorkSamples = ({ isDark = false }) => {
           onClick={() => setActiveImage(null)}
         >
           <div
-            className="relative w-full max-w-4xl rounded-[36px] bg-white p-4 shadow-[0_40px_120px_rgba(0,0,0,0.3)]"
+            className="relative w-full max-w-4xl rounded-[36px] bg-white/10 p-2 shadow-[0_40px_120px_rgba(0,0,0,0.3)] backdrop-blur-lg border border-white/30"
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               aria-label="Close image"
               onClick={() => setActiveImage(null)}
-              className="absolute right-4 top-4 h-9 w-9 rounded-full border border-[#e0d7f5] text-lg font-semibold text-[#5c5a60] transition hover:bg-[#f7f4ff]"
+              className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/80 bg-black/40 text-lg font-semibold text-white transition hover:bg-black/60"
             >
               ×
             </button>
-            <div className="flex items-center justify-center rounded-[32px] bg-[#f8f8fb] p-4">
+            <div className="flex items-center justify-center rounded-[28px] bg-transparent p-2">
               <img
                 src={`/Work Samples/${activeImage}`}
                 alt={`Work sample ${activeImage}`}
