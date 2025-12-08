@@ -16,17 +16,35 @@ const App = () => {
     }
   }, [lightsOff])
 
-  const handleMove = (event) => {
-    const x = (event.clientX / window.innerWidth) * 2 - 1
-    const y = (event.clientY / window.innerHeight) * 2 - 1
+  const updatePointer = (clientX, clientY) => {
+    const x = (clientX / window.innerWidth) * 2 - 1
+    const y = (clientY / window.innerHeight) * 2 - 1
     setPointer({ x, y })
   }
+
+  const handlePointerMove = (event) => {
+    updatePointer(event.clientX, event.clientY)
+  }
+
+  const handleTouchMove = (event) => {
+    const touch = event.touches[0] || event.changedTouches[0]
+    if (!touch) return
+    updatePointer(touch.clientX, touch.clientY)
+  }
+
+  const resetPointer = () => setPointer({ x: 0, y: 0 })
 
   return (
     <div
       className={`min-h-screen pt-24 sm:pt-20 ${lightsOff ? 'bg-[#1b1a20] text-white transition-colors' : 'bg-[#fdfcfc] text-[#1f1b1f]'} `}
-      onPointerMove={handleMove}
-      onPointerLeave={() => setPointer({ x: 0, y: 0 })}
+      onPointerMove={handlePointerMove}
+      onPointerDown={handlePointerMove}
+      onPointerLeave={resetPointer}
+      onPointerUp={resetPointer}
+      onTouchStart={handleTouchMove}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={resetPointer}
+      onTouchCancel={resetPointer}
     >
       <div className="fixed right-4 top-4 z-50 flex justify-end px-6 sm:right-6">
         <button
