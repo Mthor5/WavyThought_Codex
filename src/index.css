@@ -28,21 +28,3 @@ body {
   background: rgba(255, 105, 180, 0.35);
   color: #1f1b1f;
 }
-
-@layer utilities {
-  .animate-work-carousel {
-    animation-name: work-carousel;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    will-change: transform;
-  }
-
-  @keyframes work-carousel {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(calc(-1 * var(--carousel-distance, 100%)));
-    }
-  }
-}

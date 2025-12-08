@@ -2,7 +2,7 @@ import EggCanvas from './EggCanvas'
 
 const Hero = ({ pointer }) => {
   return (
-    <section className="relative overflow-hidden px-4 pb-12 pt-10 text-[#1b1a1e] sm:pb-16 sm:pt-16">
+    <section className="relative overflow-hidden px-4 pb-6 pt-10 text-[#1b1a1e] sm:pb-10 sm:pt-16">
       <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
         <div className="relative h-72 w-[760px] max-w-full -translate-y-6">
           <div className="absolute inset-x-0 top-2 mx-auto h-64 rounded-[999px] bg-[radial-gradient(circle_at_15%_30%,rgba(255,205,133,0.7),rgba(255,205,133,0))] blur-[55px]" />
@@ -28,7 +28,7 @@ const Hero = ({ pointer }) => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-start">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
           <div className="flex w-full items-center justify-center lg:w-2/5">
             <div className="relative h-[420px] w-[280px] overflow-visible sm:h-[520px] sm:w-[380px]">
               <EggCanvas pointer={pointer} />
