@@ -13,7 +13,7 @@ const workSamples = [
   '_MG_7324 copy.JPG',
 ]
 
-const WorkSamples = () => {
+const WorkSamples = ({ isDark = false }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [activeImage, setActiveImage] = useState(null)
   const visibleCount = 4
@@ -105,11 +105,11 @@ const WorkSamples = () => {
   }
   return (
     <section className="px-4 py-16">
-      <div className="mx-auto max-w-5xl text-center text-[#1f1b1f]">
-        <h2 className="font-rounded text-[2rem] font-semibold uppercase tracking-[0.175em] text-[#1b1a1e]">
+      <div className={`mx-auto max-w-5xl text-center ${isDark ? 'text-white' : 'text-[#1f1b1f]'}`}>
+        <h2 className="font-rounded text-[2rem] font-semibold uppercase tracking-[0.175em]">
           Work from us
         </h2>
-        <p className="mt-3 text-base text-[#5c5a60]">
+        <p className={`mt-3 text-base ${isDark ? 'text-white/70' : 'text-[#5c5a60]'}`}>
           A few Waves we&apos;ve already carved, printed, and coaxed into reality.
         </p>
         <div
@@ -145,7 +145,11 @@ const WorkSamples = () => {
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="rounded-full border border-[#1f1b1f] px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-[#1f1b1f] transition hover:bg-[#1f1b1f] hover:text-white"
+            className={`rounded-full border px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] transition ${
+              isDark
+                ? 'border-white/70 text-white hover:bg-white/10'
+                : 'border-[#1f1b1f] text-[#1f1b1f] hover:bg-[#1f1b1f] hover:text-white'
+            }`}
           >
             See all
           </button>
