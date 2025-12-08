@@ -23,12 +23,12 @@ const Hero = ({ pointer, isDark = false }) => {
             className="w-full max-w-[820px]"
           />
           <div
-            className={`rounded-[40px] border border-white/70 bg-white/20 px-6 py-4 text-[1.4rem] font-bold uppercase tracking-[0.2em] sm:rounded-[48px] sm:px-10 sm:py-5 sm:text-[2.1rem] sm:tracking-[0.3em] ${
+            className={`rounded-[40px] border border-white/70 bg-white/20 px-6 py-4 text-[clamp(1.05rem,4vw,1.4rem)] font-bold uppercase tracking-[0.15em] sm:rounded-[48px] sm:px-10 sm:py-5 sm:text-[2.1rem] sm:tracking-[0.3em] ${
               isDark ? 'text-[#1b1a1e]' : 'text-[#1b1a1e]'
             } shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md`}
           >
             WavyThought Creative Studio
-            <div className="mt-2 text-xs font-semibold tracking-[0.2em] text-[#ff67c4] sm:text-sm sm:tracking-[0.25em]">
+            <div className="mt-2 text-[clamp(0.65rem,3.2vw,0.85rem)] font-semibold tracking-[0.18em] text-[#ff67c4] sm:text-sm sm:tracking-[0.25em]">
               Playful minds - wavy ideas - dancing shadows
             </div>
           </div>
@@ -36,7 +36,7 @@ const Hero = ({ pointer, isDark = false }) => {
 
         <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
           <div className="flex w-full items-center justify-center lg:w-2/5">
-            <div className="relative h-[340px] w-[240px] overflow-visible sm:h-[520px] sm:w-[380px]">
+            <div className="relative h-[300px] w-[210px] overflow-visible sm:h-[520px] sm:w-[380px]">
               <EggCanvas pointer={pointer} />
             </div>
           </div>
