@@ -29,8 +29,14 @@ const WorkSamples = ({ isDark = false }) => {
 
   const sliderRef = useRef(null)
   const isHoveredRef = useRef(false)
+  const isDraggingRef = useRef(false)
   const targetDriftRef = useRef(0)
   const currentDriftRef = useRef(0)
+  const dragStartXRef = useRef(0)
+  const dragStartOffsetRef = useRef(0)
+  const manualOffsetRef = useRef(0)
+  const offsetRef = useRef(0)
+  const loopDistanceRef = useRef(0)
 
   const sliderSamples = useMemo(
     () => (shouldAnimate ? [...workSamples, ...workSamples] : workSamples),
@@ -66,12 +72,13 @@ const WorkSamples = ({ isDark = false }) => {
     const slider = sliderRef.current
     if (!slider) return
 
-    let offset = 0
+    let offset = offsetRef.current || 0
     let lastTime
     let animationFrame
 
     const percentPerCard = 100 / visibleCount
     const loopDistance = totalSamples * percentPerCard
+    loopDistanceRef.current = loopDistance
     const baseSpeedPerMs = percentPerCard / 3000
     const hoverSpeedPerMs = baseSpeedPerMs * 0.2
 
@@ -79,8 +86,14 @@ const WorkSamples = ({ isDark = false }) => {
       if (lastTime == null) {
         lastTime = time
       }
+
       const delta = time - lastTime
       lastTime = time
+
+      if (isDraggingRef.current) {
+        animationFrame = requestAnimationFrame(animate)
+        return
+      }
 
       const speedPerMs = isHoveredRef.current ? hoverSpeedPerMs : baseSpeedPerMs
       offset += delta * speedPerMs
@@ -91,6 +104,7 @@ const WorkSamples = ({ isDark = false }) => {
       currentDriftRef.current += (targetDriftRef.current - currentDriftRef.current) * 0.08
       const displayOffset = offset + currentDriftRef.current
       slider.style.transform = `translateX(-${displayOffset}%)`
+      offsetRef.current = offset
 
       animationFrame = requestAnimationFrame(animate)
     }
@@ -104,20 +118,82 @@ const WorkSamples = ({ isDark = false }) => {
     isHoveredRef.current = true
   }
 
-  const handlePointerLeave = () => {
+  const handlePointerLeave = (event) => {
     if (!shouldAnimate) return
     isHoveredRef.current = false
     targetDriftRef.current = 0
+    if (isDraggingRef.current) {
+      handleDragEnd(event)
+    }
   }
 
   const handlePointerMove = (event) => {
     if (!shouldAnimate) return
+    if (isDraggingRef.current) return
     const slider = sliderRef.current
     if (!slider) return
     const rect = slider.getBoundingClientRect()
     const relativeX = (event.clientX - rect.left) / rect.width
     const driftRange = (100 / visibleCount) * 0.4
     targetDriftRef.current = (relativeX - 0.5) * driftRange
+  }
+
+  const handleDragStart = (event) => {
+    if (!shouldAnimate) return
+    const slider = sliderRef.current
+    if (!slider) return
+    slider.setPointerCapture?.(event.pointerId)
+    isDraggingRef.current = true
+    isHoveredRef.current = true
+    const startOffset = offsetRef.current + currentDriftRef.current
+    targetDriftRef.current = 0
+    currentDriftRef.current = 0
+    dragStartXRef.current = event.clientX
+    dragStartOffsetRef.current = startOffset
+    manualOffsetRef.current = dragStartOffsetRef.current
+    slider.style.cursor = 'grabbing'
+    event.preventDefault()
+  }
+
+  const handleDragMove = (event) => {
+    if (!shouldAnimate || !isDraggingRef.current) return
+    const slider = sliderRef.current
+    if (!slider) return
+    const rect = slider.getBoundingClientRect()
+    if (rect.width === 0) return
+    const deltaPx = event.clientX - dragStartXRef.current
+    const percentDelta = (deltaPx / rect.width) * 100
+    const manualOffset = dragStartOffsetRef.current - percentDelta
+    manualOffsetRef.current = manualOffset
+    slider.style.transform = `translateX(-${manualOffset}%)`
+    event.preventDefault()
+  }
+
+  const handleDragEnd = (event) => {
+    if (!isDraggingRef.current) return
+    const slider = sliderRef.current
+    if (slider && event?.pointerId != null) {
+      slider.releasePointerCapture?.(event.pointerId)
+      slider.style.cursor = ''
+    } else if (slider) {
+      slider.style.cursor = ''
+    }
+    isDraggingRef.current = false
+    isHoveredRef.current = false
+    targetDriftRef.current = 0
+    currentDriftRef.current = 0
+    let normalizedOffset = manualOffsetRef.current
+    const loopDistance = loopDistanceRef.current || 0
+    if (loopDistance > 0) {
+      normalizedOffset %= loopDistance
+      if (normalizedOffset < 0) normalizedOffset += loopDistance
+    } else {
+      normalizedOffset = 0
+    }
+    offsetRef.current = normalizedOffset
+    if (slider) {
+      slider.style.transform = `translateX(-${normalizedOffset}%)`
+    }
   }
 
   const modalOverlayClasses = isDark ? 'bg-[#050308]/65' : 'bg-white/40'
@@ -146,8 +222,17 @@ const WorkSamples = ({ isDark = false }) => {
           onPointerEnter={handlePointerEnter}
           onPointerLeave={handlePointerLeave}
           onPointerMove={handlePointerMove}
+          style={{ touchAction: 'pan-y' }}
         >
-          <div className="flex -mx-2 sm:-mx-3" ref={sliderRef}>
+          <div
+            className="flex -mx-2 py-4 sm:-mx-3 sm:py-5 cursor-grab active:cursor-grabbing select-none"
+            ref={sliderRef}
+            onPointerDown={handleDragStart}
+            onPointerMove={handleDragMove}
+            onPointerUp={handleDragEnd}
+            onPointerCancel={handleDragEnd}
+            onPointerLeave={handleDragEnd}
+          >
             {sliderSamples.map((sample, index) => (
               <div
                 key={`${sample}-${index}`}
