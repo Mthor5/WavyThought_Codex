@@ -14,6 +14,8 @@ const ContactForm = ({ isDark = false }) => {
   const [status, setStatus] = useState('idle')
   const [feedback, setFeedback] = useState('')
   const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY
+  const fallbackEndpoint = import.meta.env.VITE_CONTACT_ENDPOINT || '/api/contact'
+  const shouldUseWeb3Forms = Boolean(accessKey)
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target
@@ -35,39 +37,14 @@ const ContactForm = ({ isDark = false }) => {
       return
     }
 
-    if (!accessKey) {
-      setStatus('error')
-      setFeedback('Contact form is temporarily unavailable. Missing Web3Forms access key.')
-      return
-    }
-
     setStatus('loading')
     setFeedback('Sending your message...')
 
     try {
-      const payload = new FormData()
-      payload.append('access_key', accessKey)
-      payload.append('from_name', 'WavyThought Website')
-      payload.append('subject', `New inquiry from ${formValues.name}`)
-      payload.append('reply_to', formValues.email)
-      payload.append('name', formValues.name)
-      payload.append('email', formValues.email)
-      payload.append('message', formValues.message)
-      payload.append('subscribe', formValues.subscribe ? 'Yes, please add me' : 'No, thanks')
+      const successMessage = shouldUseWeb3Forms
+        ? await submitViaWeb3Forms()
+        : await submitViaBackend()
 
-      const response = await fetch(WEB3FORMS_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-        },
-        body: payload,
-      })
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data?.message || 'Something unexpected happened.')
-      }
-      const result = await response.json()
-      const successMessage = result?.message || 'Thank you for the wave! We will respond shortly.'
       setStatus('success')
       setFeedback(successMessage)
       setFormValues(initialFormValues)
@@ -75,6 +52,58 @@ const ContactForm = ({ isDark = false }) => {
       setStatus('error')
       setFeedback(error.message || 'Unable to send your message right now. Please try again soon.')
     }
+  }
+
+  const submitViaWeb3Forms = async () => {
+    const payload = new FormData()
+    payload.append('access_key', accessKey)
+    payload.append('from_name', 'WavyThought Website')
+    payload.append('subject', `New inquiry from ${formValues.name}`)
+    payload.append('reply_to', formValues.email)
+    payload.append('name', formValues.name)
+    payload.append('email', formValues.email)
+    payload.append('message', formValues.message)
+    payload.append('subscribe', formValues.subscribe ? 'Yes, please add me' : 'No, thanks')
+
+    const response = await fetch(WEB3FORMS_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+      },
+      body: payload,
+    })
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data?.message || 'Something unexpected happened.')
+    }
+
+    const result = await response.json()
+    return result?.message || 'Thank you for the wave! We will respond shortly.'
+  }
+
+  const submitViaBackend = async () => {
+    const response = await fetch(fallbackEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        name: formValues.name,
+        email: formValues.email,
+        message: formValues.message,
+        subscribe: formValues.subscribe,
+      }),
+    })
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data?.message || 'Email service is currently unavailable.')
+    }
+
+    const result = await response.json().catch(() => ({}))
+    return result?.message || 'Your note is on its way. Talk soon!'
   }
 
   return (

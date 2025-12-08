@@ -8,12 +8,12 @@ WavyThought_Codex is the living landing page for WavyThought's creative studio. 
 - Sculptural 3D hero model with lighting tuned to the gradient palette and cursor-reactive motion.
 - Work carousel with a glass-tile treatment, hover zoom, “See All” modal grid, and full-screen lightbox viewer.
 - Accessible contact form with inline validation, frosted inputs for both themes, and a mailing-list opt-in smile-button control.
-- Web3Forms-powered contact form (with the existing Express + Nodemailer endpoint available if you prefer self-hosted email delivery).
+- Web3Forms-powered contact form with an automatic Express + Nodemailer fallback whenever a Web3Forms access key is not provided.
 - Tailwind-powered styling that keeps all content center-aligned for a cohesive layout.
 
 ## Getting Started
 1. **Install dependencies:** `npm install`
-2. **Configure environment:** Duplicate `.env.example` to `.env`, add your `VITE_WEB3FORMS_ACCESS_KEY` (from [web3forms.com](https://web3forms.com/)), and fill in SMTP credentials if you plan to run the optional backend relay.
+2. **Configure environment:** Duplicate `.env.example` to `.env`, add your `VITE_WEB3FORMS_ACCESS_KEY` (from [web3forms.com](https://web3forms.com/)), optionally set `VITE_CONTACT_ENDPOINT` (e.g. `http://localhost:4000/api/contact`) if you plan to rely on the backend relay, and fill in SMTP credentials for that relay.
 3. **Run the backend:** `npm run dev:server` (defaults to `http://localhost:4000`)
 4. **Run the frontend:** In another terminal, `npm run dev` and open the provided Vite URL (usually `http://localhost:5173`).
 5. **Build for production (optional):** `npm run build`
