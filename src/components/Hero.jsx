@@ -1,10 +1,68 @@
+import { useEffect, useRef, useState } from 'react'
 import EggCanvas from './EggCanvas'
 
 const Hero = ({ pointer, isDark = false }) => {
   const baseText = isDark ? 'text-white' : 'text-[#1b1a1e]'
   const bodyText = isDark ? 'text-white/80' : 'text-[#3c3c3c]'
+  const heroRef = useRef(null)
+  const promptTimers = useRef([])
+  const [isHeroVisible, setIsHeroVisible] = useState(false)
+  const [showScrubPrompt, setShowScrubPrompt] = useState(false)
+  const [isBlinkingPrompt, setIsBlinkingPrompt] = useState(false)
+
+  const clearPromptTimers = () => {
+    promptTimers.current.forEach((timerId) => clearTimeout(timerId))
+    promptTimers.current = []
+  }
+
+  useEffect(() => {
+    const sectionEl = heroRef.current
+    if (!sectionEl) return undefined
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const isMobileViewport = window.innerWidth < 640
+        if (entry.isIntersecting && isMobileViewport) {
+          setIsHeroVisible(true)
+        } else {
+          setIsHeroVisible(false)
+          setShowScrubPrompt(false)
+          setIsBlinkingPrompt(false)
+          clearPromptTimers()
+        }
+      },
+      { threshold: 0.45 }
+    )
+    observer.observe(sectionEl)
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    clearPromptTimers()
+    if (!isHeroVisible) return undefined
+    setIsBlinkingPrompt(false)
+    setShowScrubPrompt(true)
+    const hideTimer = setTimeout(() => setShowScrubPrompt(false), 1000)
+    const blinkTimer = setTimeout(() => {
+      setIsBlinkingPrompt(true)
+      setShowScrubPrompt(true)
+    }, 2200)
+    const blinkHideTimer = setTimeout(() => {
+      setShowScrubPrompt(false)
+      setIsBlinkingPrompt(false)
+    }, 2800)
+    promptTimers.current.push(hideTimer, blinkTimer, blinkHideTimer)
+    return () => {
+      clearPromptTimers()
+    }
+  }, [isHeroVisible])
+
   return (
-    <section className={`relative overflow-visible px-4 pb-10 pt-20 ${baseText} sm:pb-10 sm:pt-16`}>
+    <section
+      ref={heroRef}
+      className={`relative overflow-visible px-4 pb-10 pt-20 ${baseText} sm:pb-10 sm:pt-16`}
+    >
       <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
         <div className="relative h-72 w-[760px] max-w-full -translate-y-6">
           <div className="absolute inset-x-0 top-2 mx-auto h-64 rounded-[999px] bg-[radial-gradient(circle_at_15%_30%,rgba(255,205,133,0.7),rgba(255,205,133,0))] blur-[55px]" />
@@ -38,6 +96,19 @@ const Hero = ({ pointer, isDark = false }) => {
           <div className="flex w-full items-center justify-center lg:w-2/5">
             <div className="relative h-[300px] w-[210px] overflow-visible sm:h-[520px] sm:w-[380px]">
               <EggCanvas pointer={pointer} />
+              {showScrubPrompt && (
+                <div
+                  className={`pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full border px-3 py-1.5 text-[0.58rem] font-semibold uppercase tracking-[0.25em] shadow-[0_10px_25px_rgba(0,0,0,0.35)] backdrop-blur-lg sm:hidden ${
+                    isBlinkingPrompt ? 'animate-pulse' : ''
+                  } ${
+                    isDark
+                      ? 'border-white/40 bg-white/15 text-white/90'
+                      : 'border-[#1b1a1e]/15 bg-white/80 text-[#1b1a1e]'
+                  }`}
+                >
+                  <span className="text-base leading-none">↔</span> Move
+                </div>
+              )}
             </div>
           </div>
           <div className={`w-full space-y-6 text-base leading-7 ${bodyText} sm:text-lg sm:leading-8 lg:w-3/5`}>
