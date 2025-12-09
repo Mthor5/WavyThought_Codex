@@ -6,6 +6,7 @@ import ContactForm from './components/ContactForm'
 const App = () => {
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
   const [lightsOff, setLightsOff] = useState(false)
+  const [isMobileLightsToggleVisible, setIsMobileLightsToggleVisible] = useState(false)
 
   useEffect(() => {
     const { body } = document
@@ -33,6 +34,17 @@ const App = () => {
   }
 
   const resetPointer = () => setPointer({ x: 0, y: 0 })
+  const toggleLights = () => setLightsOff((prev) => !prev)
+  const toggleMobileLightsDrawer = () => setIsMobileLightsToggleVisible((prev) => !prev)
+  const lightToggleStyles = lightsOff
+    ? 'border-white/60 bg-white/10 text-white hover:bg-white/20'
+    : 'border-[#1f1b1f] text-[#1f1b1f] hover:bg-[#1f1b1f] hover:text-white'
+  const mobileHandleStyles = lightsOff
+    ? 'border-white/60 bg-white/5 text-white/80'
+    : 'border-[#1f1b1f] bg-white text-[#1f1b1f]'
+  const mobileDrawerVisibilityClasses = isMobileLightsToggleVisible
+    ? 'max-w-[220px] px-4 py-2 opacity-100'
+    : 'max-w-0 px-0 py-0 opacity-0 pointer-events-none'
 
   return (
     <div
@@ -46,16 +58,34 @@ const App = () => {
       onTouchEnd={resetPointer}
       onTouchCancel={resetPointer}
     >
-      <div className="fixed right-4 top-4 z-50 flex justify-end px-6 sm:right-6">
+      <div className="fixed right-4 top-4 z-50 hidden justify-end px-6 sm:flex sm:right-6">
         <button
           type="button"
-          onClick={() => setLightsOff((prev) => !prev)}
+          onClick={toggleLights}
           aria-pressed={lightsOff}
-          className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${
-            lightsOff
-              ? 'border-white/60 bg-white/10 text-white hover:bg-white/20'
-              : 'border-[#1f1b1f] text-[#1f1b1f] hover:bg-[#1f1b1f] hover:text-white'
-          }`}
+          className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${lightToggleStyles}`}
+        >
+          {lightsOff ? 'Lights On' : 'Lights Off'}
+        </button>
+      </div>
+      <div className="fixed right-0 top-4 z-50 flex items-center justify-end gap-2 px-2 sm:hidden">
+        <button
+          type="button"
+          aria-label={isMobileLightsToggleVisible ? 'Hide lights control' : 'Show lights control'}
+          aria-controls="mobile-lights-toggle"
+          aria-expanded={isMobileLightsToggleVisible}
+          onClick={toggleMobileLightsDrawer}
+          className={`rounded-l-full border border-r-0 px-1 py-3 text-[10px] font-semibold uppercase tracking-[0.4em] transition ${mobileHandleStyles}`}
+          style={{ writingMode: 'vertical-rl' }}
+        >
+          {isMobileLightsToggleVisible ? 'Hide' : 'Glow'}
+        </button>
+        <button
+          id="mobile-lights-toggle"
+          type="button"
+          onClick={toggleLights}
+          aria-pressed={lightsOff}
+          className={`overflow-hidden rounded-full border text-xs font-semibold uppercase tracking-[0.3em] transition-all duration-200 ease-out ${lightToggleStyles} ${mobileDrawerVisibilityClasses}`}
         >
           {lightsOff ? 'Lights On' : 'Lights Off'}
         </button>
