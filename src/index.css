@@ -21,6 +21,8 @@ body {
   scrollbar-gutter: stable both-edges;
   padding-left: 0;
   padding-right: 0;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 body.lights-off {
