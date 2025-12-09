@@ -118,12 +118,13 @@ const WorkSamples = ({ isDark = false }) => {
     isHoveredRef.current = true
   }
 
-  const handlePointerLeave = (event) => {
+  const handlePointerLeave = () => {
     if (!shouldAnimate) return
     isHoveredRef.current = false
     targetDriftRef.current = 0
+    currentDriftRef.current = 0
     if (isDraggingRef.current) {
-      handleDragEnd(event)
+      handleDragEnd()
     }
   }
 
@@ -142,7 +143,6 @@ const WorkSamples = ({ isDark = false }) => {
     if (!shouldAnimate) return
     const slider = sliderRef.current
     if (!slider) return
-    slider.setPointerCapture?.(event.pointerId)
     isDraggingRef.current = true
     isHoveredRef.current = true
     const startOffset = offsetRef.current + currentDriftRef.current
@@ -152,7 +152,6 @@ const WorkSamples = ({ isDark = false }) => {
     dragStartOffsetRef.current = startOffset
     manualOffsetRef.current = dragStartOffsetRef.current
     slider.style.cursor = 'grabbing'
-    event.preventDefault()
   }
 
   const handleDragMove = (event) => {
@@ -169,13 +168,10 @@ const WorkSamples = ({ isDark = false }) => {
     event.preventDefault()
   }
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = () => {
     if (!isDraggingRef.current) return
     const slider = sliderRef.current
-    if (slider && event?.pointerId != null) {
-      slider.releasePointerCapture?.(event.pointerId)
-      slider.style.cursor = ''
-    } else if (slider) {
+    if (slider) {
       slider.style.cursor = ''
     }
     isDraggingRef.current = false
@@ -222,7 +218,6 @@ const WorkSamples = ({ isDark = false }) => {
           onPointerEnter={handlePointerEnter}
           onPointerLeave={handlePointerLeave}
           onPointerMove={handlePointerMove}
-          style={{ touchAction: 'pan-y' }}
         >
           <div
             className="flex -mx-2 py-4 sm:-mx-3 sm:py-5 cursor-grab active:cursor-grabbing select-none"
@@ -232,6 +227,7 @@ const WorkSamples = ({ isDark = false }) => {
             onPointerUp={handleDragEnd}
             onPointerCancel={handleDragEnd}
             onPointerLeave={handleDragEnd}
+            style={{ touchAction: 'pan-y' }}
           >
             {sliderSamples.map((sample, index) => (
               <div
