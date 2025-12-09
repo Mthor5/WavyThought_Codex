@@ -37,6 +37,7 @@ const WorkSamples = ({ isDark = false }) => {
   const manualOffsetRef = useRef(0)
   const offsetRef = useRef(0)
   const loopDistanceRef = useRef(0)
+  const dragMovedRef = useRef(false)
 
   const sliderSamples = useMemo(
     () => (shouldAnimate ? [...workSamples, ...workSamples] : workSamples),
@@ -145,6 +146,7 @@ const WorkSamples = ({ isDark = false }) => {
     if (!slider) return
     isDraggingRef.current = true
     isHoveredRef.current = true
+    dragMovedRef.current = false
     const startOffset = offsetRef.current + currentDriftRef.current
     targetDriftRef.current = 0
     currentDriftRef.current = 0
@@ -161,6 +163,9 @@ const WorkSamples = ({ isDark = false }) => {
     const rect = slider.getBoundingClientRect()
     if (rect.width === 0) return
     const deltaPx = event.clientX - dragStartXRef.current
+    if (!dragMovedRef.current && Math.abs(deltaPx) > 5) {
+      dragMovedRef.current = true
+    }
     const percentDelta = (deltaPx / rect.width) * 100
     const manualOffset = dragStartOffsetRef.current - percentDelta
     manualOffsetRef.current = manualOffset
@@ -190,6 +195,14 @@ const WorkSamples = ({ isDark = false }) => {
     if (slider) {
       slider.style.transform = `translateX(-${normalizedOffset}%)`
     }
+  }
+
+  const handleSampleClick = (sample) => {
+    if (dragMovedRef.current) {
+      dragMovedRef.current = false
+      return
+    }
+    setActiveImage(sample)
   }
 
   const modalOverlayClasses = isDark ? 'bg-[#050308]/65' : 'bg-white/40'
@@ -238,12 +251,14 @@ const WorkSamples = ({ isDark = false }) => {
                 <div className="group flex h-full flex-col items-center justify-center rounded-[32px] bg-transparent transition hover:-translate-y-1">
                   <div
                     className="relative w-full overflow-hidden rounded-[26px] border border-white/60 bg-white/20 backdrop-blur-sm transition hover:border-white cursor-pointer"
-                    onClick={() => setActiveImage(sample)}
+                    onClick={() => handleSampleClick(sample)}
+                    onDragStart={(event) => event.preventDefault()}
                   >
                     <img
                       src={`/Work Samples/${sample}`}
                       alt={`Work sample ${sample}`}
                       className="aspect-square w-full object-cover"
+                      draggable={false}
                     />
                   </div>
                 </div>
