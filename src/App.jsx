@@ -7,6 +7,7 @@ const App = () => {
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
   const [lightsOff, setLightsOff] = useState(false)
   const [isMobileLightsToggleVisible, setIsMobileLightsToggleVisible] = useState(false)
+  const [showScrollToTop, setShowScrollToTop] = useState(false)
 
   useEffect(() => {
     const { body } = document
@@ -16,6 +17,19 @@ const App = () => {
       body.classList.remove('lights-off')
     }
   }, [lightsOff])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerWidth < 640) {
+        setIsMobileLightsToggleVisible(false)
+      }
+      setShowScrollToTop(window.scrollY > 200)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   const updatePointer = (clientX, clientY) => {
     const x = (clientX / window.innerWidth) * 2 - 1
@@ -40,11 +54,22 @@ const App = () => {
     ? 'border-white/60 bg-white/10 text-white hover:bg-white/20'
     : 'border-[#1f1b1f] text-[#1f1b1f] hover:bg-[#1f1b1f] hover:text-white'
   const mobileHandleStyles = lightsOff
-    ? 'border-white/60 bg-white/5 text-white/80'
-    : 'border-[#1f1b1f] bg-white text-[#1f1b1f]'
+    ? 'border-white/50 bg-white/10 text-white/80 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.25)]'
+    : 'border-[#1f1b1f]/20 bg-white/40 text-[#1f1b1f] backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.15)]'
   const mobileDrawerVisibilityClasses = isMobileLightsToggleVisible
-    ? 'max-w-[220px] px-4 py-2 opacity-100'
-    : 'max-w-0 px-0 py-0 opacity-0 pointer-events-none'
+    ? 'max-w-[220px] px-4 py-2 opacity-100 mr-3'
+    : 'max-w-0 px-0 py-0 opacity-0 pointer-events-none border-transparent'
+  const scrollToTopButtonStyles = lightsOff
+    ? 'border-white/40 bg-white/10 text-white backdrop-blur-lg shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:bg-white/20'
+    : 'border-[#1f1b1f]/15 bg-[#fdfcfc]/40 text-[#1f1b1f] backdrop-blur-lg shadow-[0_12px_40px_rgba(31,27,31,0.2)] hover:bg-[#fdfcfc]/60'
+  const scrollToTopButtonVisibility = showScrollToTop
+    ? 'opacity-100 pointer-events-auto translate-y-0'
+    : 'opacity-0 pointer-events-none translate-y-4'
+
+  const scrollToTop = () => {
+    if (typeof window === 'undefined') return
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <div
@@ -68,18 +93,20 @@ const App = () => {
           {lightsOff ? 'Lights On' : 'Lights Off'}
         </button>
       </div>
-      <div className="fixed right-0 top-4 z-50 flex items-center justify-end gap-2 px-2 sm:hidden">
-        <button
-          type="button"
-          aria-label={isMobileLightsToggleVisible ? 'Hide lights control' : 'Show lights control'}
-          aria-controls="mobile-lights-toggle"
-          aria-expanded={isMobileLightsToggleVisible}
-          onClick={toggleMobileLightsDrawer}
-          className={`rounded-l-full border border-r-0 px-1 py-3 text-[10px] font-semibold uppercase tracking-[0.4em] transition ${mobileHandleStyles}`}
-          style={{ writingMode: 'vertical-rl' }}
-        >
-          {isMobileLightsToggleVisible ? 'Hide' : 'Glow'}
-        </button>
+      <div className="fixed right-0 top-4 z-50 flex items-center justify-end sm:hidden">
+        {!isMobileLightsToggleVisible && (
+          <button
+            type="button"
+            aria-label="Show lights control"
+            aria-controls="mobile-lights-toggle"
+            aria-expanded={isMobileLightsToggleVisible}
+            onClick={toggleMobileLightsDrawer}
+            className={`rounded-l-full border border-r-0 px-1 py-3 text-[10px] font-semibold uppercase tracking-[0.4em] transition ${mobileHandleStyles}`}
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            Lights
+          </button>
+        )}
         <button
           id="mobile-lights-toggle"
           type="button"
@@ -118,6 +145,25 @@ const App = () => {
           </div>
         </div>
       </footer>
+      <button
+        type="button"
+        onClick={scrollToTop}
+        aria-label="Scroll to top"
+        className={`fixed bottom-6 right-6 z-40 rounded-full border p-3 shadow-lg transition-all duration-200 ${scrollToTopButtonStyles} ${scrollToTopButtonVisibility}`}
+      >
+        <svg
+          className="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 19V5" />
+          <path d="M5 12l7-7 7 7" />
+        </svg>
+      </button>
     </div>
   )
 }
