@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import Hero from './components/Hero'
-import WorkSamples from './components/WorkSamples'
-import ContactForm from './components/ContactForm'
+
+const WorkSamples = lazy(() => import('./components/WorkSamples'))
+const ContactForm = lazy(() => import('./components/ContactForm'))
 
 const App = () => {
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
   const [lightsOff, setLightsOff] = useState(false)
-  const [isMobileLightsToggleVisible, setIsMobileLightsToggleVisible] = useState(false)
   const [showScrollToTop, setShowScrollToTop] = useState(false)
+  const [reduceEffects, setReduceEffects] = useState(false)
 
   useEffect(() => {
     const { body } = document
@@ -20,14 +21,43 @@ const App = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerWidth < 640) {
-        setIsMobileLightsToggleVisible(false)
-      }
       setShowScrollToTop(window.scrollY > 200)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => {
       window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+    const evaluateDeviceCapabilities = () => {
+      const prefersReducedMotion = mediaQuery.matches
+      const lowCores = typeof navigator !== 'undefined' && navigator.hardwareConcurrency
+        ? navigator.hardwareConcurrency <= 4
+        : false
+      const lowMemory = typeof navigator !== 'undefined' && navigator.deviceMemory
+        ? navigator.deviceMemory <= 4
+        : false
+      setReduceEffects(prefersReducedMotion || lowCores || lowMemory)
+    }
+
+    evaluateDeviceCapabilities()
+    const listener = () => evaluateDeviceCapabilities()
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', listener)
+    } else {
+      mediaQuery.addListener(listener)
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', listener)
+      } else {
+        mediaQuery.removeListener(listener)
+      }
     }
   }, [])
 
@@ -49,16 +79,12 @@ const App = () => {
 
   const resetPointer = () => setPointer({ x: 0, y: 0 })
   const toggleLights = () => setLightsOff((prev) => !prev)
-  const toggleMobileLightsDrawer = () => setIsMobileLightsToggleVisible((prev) => !prev)
   const lightToggleStyles = lightsOff
     ? 'border-white/60 bg-white/10 text-white hover:bg-white/20'
     : 'border-[#1f1b1f] text-[#1f1b1f] hover:bg-[#1f1b1f] hover:text-white'
   const mobileHandleStyles = lightsOff
     ? 'border-white/50 bg-white/10 text-white/80 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.25)]'
     : 'border-[#1f1b1f]/20 bg-white/40 text-[#1f1b1f] backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.15)]'
-  const mobileDrawerVisibilityClasses = isMobileLightsToggleVisible
-    ? 'max-w-[220px] px-4 py-2 opacity-100 mr-3'
-    : 'max-w-0 px-0 py-0 opacity-0 pointer-events-none border-transparent'
   const scrollToTopButtonStyles = lightsOff
     ? 'border-white/40 bg-white/10 text-white backdrop-blur-lg shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:bg-white/20'
     : 'border-[#1f1b1f]/15 bg-[#fdfcfc]/40 text-[#1f1b1f] backdrop-blur-lg shadow-[0_12px_40px_rgba(31,27,31,0.2)] hover:bg-[#fdfcfc]/60'
@@ -70,6 +96,16 @@ const App = () => {
     if (typeof window === 'undefined') return
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  const renderSectionFallback = (heightClass) => (
+    <section className="px-4 py-16" aria-hidden>
+      <div
+        className={`mx-auto max-w-5xl rounded-[32px] ${heightClass} animate-pulse ${
+          lightsOff ? 'bg-white/10' : 'bg-[#1f1b1f]/10'
+        }`}
+      />
+    </section>
+  )
 
   return (
     <div
@@ -94,32 +130,24 @@ const App = () => {
         </button>
       </div>
       <div className="fixed right-0 top-4 z-50 flex items-center justify-end sm:hidden">
-        {!isMobileLightsToggleVisible && (
-          <button
-            type="button"
-            aria-label="Show lights control"
-            aria-controls="mobile-lights-toggle"
-            aria-expanded={isMobileLightsToggleVisible}
-            onClick={toggleMobileLightsDrawer}
-            className={`rounded-l-full border border-r-0 px-1 py-3 text-[10px] font-semibold uppercase tracking-[0.4em] transition ${mobileHandleStyles}`}
-            style={{ writingMode: 'vertical-rl' }}
-          >
-            Lights
-          </button>
-        )}
         <button
-          id="mobile-lights-toggle"
           type="button"
+          aria-label={`Toggle lights (${lightsOff ? 'turn on' : 'turn off'})`}
           onClick={toggleLights}
           aria-pressed={lightsOff}
-          className={`overflow-hidden rounded-full border text-xs font-semibold uppercase tracking-[0.3em] transition-all duration-200 ease-out ${lightToggleStyles} ${mobileDrawerVisibilityClasses}`}
+          className={`rounded-l-full border border-r-0 px-1 py-3 text-[10px] font-semibold uppercase tracking-[0.4em] transition ${mobileHandleStyles}`}
+          style={{ writingMode: 'vertical-rl' }}
         >
           {lightsOff ? 'Lights On' : 'Lights Off'}
         </button>
       </div>
-      <Hero pointer={pointer} isDark={lightsOff} />
-      <WorkSamples isDark={lightsOff} />
-      <ContactForm isDark={lightsOff} />
+      <Hero pointer={pointer} isDark={lightsOff} reduceEffects={reduceEffects} />
+      <Suspense fallback={renderSectionFallback('h-[360px]')}>
+        <WorkSamples isDark={lightsOff} reduceEffects={reduceEffects} />
+      </Suspense>
+      <Suspense fallback={renderSectionFallback('h-[520px]')}>
+        <ContactForm isDark={lightsOff} reduceEffects={reduceEffects} />
+      </Suspense>
       <footer className={`px-6 pb-16 pt-12 text-xs ${lightsOff ? 'text-white/70' : 'text-[#3c3c3c]'}`}>
         <div className="mx-auto flex max-w-5xl flex-col gap-4 text-center uppercase tracking-[0.35em] sm:flex-row sm:items-start sm:justify-between sm:text-left">
           <p>&copy; 2025 WAVYTHOUGHT LLC. ALL RIGHTS RESERVED.</p>

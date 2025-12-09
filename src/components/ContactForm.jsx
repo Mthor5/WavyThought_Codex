@@ -10,7 +10,7 @@ const initialFormValues = {
 const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit'
 const DEFAULT_WEB3FORMS_ACCESS_KEY = 'c33f1cf1-691e-462d-b2f8-0d0c9cd51de2'
 
-const ContactForm = ({ isDark = false }) => {
+const ContactForm = ({ isDark = false, reduceEffects = false }) => {
   const [formValues, setFormValues] = useState(initialFormValues)
   const [status, setStatus] = useState('idle')
   const [feedback, setFeedback] = useState('')
@@ -111,13 +111,15 @@ const ContactForm = ({ isDark = false }) => {
 
   return (
     <section className="relative px-4 pb-24 pt-20">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-32 top-6 hidden h-72 w-72 -rotate-[12deg] rounded-[45%_55%_40%_60%] bg-[radial-gradient(circle_at_30%_30%,rgba(255,217,147,0.8),rgba(255,153,215,0.5),rgba(255,217,147,0))] blur-[70px] sm:block" />
-        <div className="absolute left-6 top-1/3 hidden h-64 w-64 rotate-[18deg] rounded-[60%_40%_45%_55%] bg-[radial-gradient(circle_at_40%_30%,rgba(255,140,201,0.85),rgba(255,209,152,0.5),rgba(255,140,201,0))] blur-[75px] md:block" />
-        <div className="absolute right-0 top-10 hidden h-72 w-60 rotate-[20deg] rounded-[55%_45%_60%_40%] bg-[radial-gradient(circle_at_60%_30%,rgba(255,111,201,0.85),rgba(255,168,122,0.5),rgba(255,111,201,0))] blur-[90px] sm:block" />
-        <div className="absolute left-10 bottom-2 hidden h-80 w-72 -rotate-[25deg] rounded-[55%_45%_50%_50%] bg-[radial-gradient(circle_at_30%_70%,rgba(255,174,88,0.7),rgba(255,111,201,0.35),rgba(255,174,88,0))] blur-[85px] sm:block" />
-        <div className="absolute right-6 bottom-4 h-72 w-68 rotate-[18deg] rounded-[40%_60%_55%_45%] bg-[radial-gradient(circle_at_60%_40%,rgba(199,138,255,0.7),rgba(255,193,121,0.4),rgba(199,138,255,0))] blur-[85px]" />
-      </div>
+      {!reduceEffects && (
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-32 top-6 hidden h-72 w-72 -rotate-[12deg] rounded-[45%_55%_40%_60%] bg-[radial-gradient(circle_at_30%_30%,rgba(255,217,147,0.8),rgba(255,153,215,0.5),rgba(255,217,147,0))] blur-[70px] sm:block" />
+          <div className="absolute left-6 top-1/3 hidden h-64 w-64 rotate-[18deg] rounded-[60%_40%_45%_55%] bg-[radial-gradient(circle_at_40%_30%,rgba(255,140,201,0.85),rgba(255,209,152,0.5),rgba(255,140,201,0))] blur-[75px] md:block" />
+          <div className="absolute right-0 top-10 hidden h-72 w-60 rotate-[20deg] rounded-[55%_45%_60%_40%] bg-[radial-gradient(circle_at_60%_30%,rgba(255,111,201,0.85),rgba(255,168,122,0.5),rgba(255,111,201,0))] blur-[90px] sm:block" />
+          <div className="absolute left-10 bottom-2 hidden h-80 w-72 -rotate-[25deg] rounded-[55%_45%_50%_50%] bg-[radial-gradient(circle_at_30%_70%,rgba(255,174,88,0.7),rgba(255,111,201,0.35),rgba(255,174,88,0))] blur-[85px] sm:block" />
+          <div className="absolute right-6 bottom-4 h-72 w-68 rotate-[18deg] rounded-[40%_60%_55%_45%] bg-[radial-gradient(circle_at_60%_40%,rgba(199,138,255,0.7),rgba(255,193,121,0.4),rgba(199,138,255,0))] blur-[85px]" />
+        </div>
+      )}
       <div className={`mx-auto max-w-3xl text-center ${isDark ? 'text-white' : 'text-[#1b1a1e]'}`}>
         <h2 className="font-rounded text-[2rem] font-semibold uppercase tracking-[0.175em]">
           Get in touch
@@ -133,14 +135,16 @@ const ContactForm = ({ isDark = false }) => {
         </div>
         <form
           onSubmit={handleSubmit}
-          className={`relative overflow-hidden rounded-[48px] border border-white/70 p-[1.5px] shadow-[0_45px_120px_rgba(31,27,31,0.25)] sm:ml-12 sm:mr-4 ${
+          className={`relative overflow-hidden rounded-[48px] border border-white/70 p-[1.5px] sm:ml-12 sm:mr-4 ${
+            reduceEffects ? 'shadow-none' : 'shadow-[0_45px_120px_rgba(31,27,31,0.25)]'
+          } ${
             isDark ? 'bg-gradient-to-br from-[#292734] via-[#28243a] to-[#1b1a20]' : 'bg-gradient-to-br from-[#ffe48f] via-[#ffb4f3] to-[#c179ff]'
           }`}
         >
           <div
-            className={`m-3 rounded-[36px] p-8 backdrop-blur-[2px] sm:m-4 sm:p-12 ${
+            className={`m-3 rounded-[36px] p-8 sm:m-4 sm:p-12 ${
               isDark ? 'bg-white/5' : 'bg-gradient-to-b from-white/75 via-white/65 to-white/45'
-            }`}
+            } ${reduceEffects ? '' : 'backdrop-blur-[2px] shadow-[0_10px_45px_rgba(0,0,0,0.15)]'}`}
           >
             <div className="flex flex-col gap-6">
               {[
@@ -161,7 +165,9 @@ const ContactForm = ({ isDark = false }) => {
                     placeholder={field.placeholder}
                     value={formValues[field.id]}
                     onChange={handleChange}
-                    className={`mt-2 w-full rounded-[28px] border border-white/60 px-6 py-3 text-base shadow-[0_10px_35px_rgba(255,120,210,0.18)] transition focus-visible:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
+                    className={`mt-2 w-full rounded-[28px] border border-white/60 px-6 py-3 text-base transition focus-visible:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
+                      reduceEffects ? '' : 'shadow-[0_10px_35px_rgba(255,120,210,0.18)]'
+                    } ${
                       isDark
                         ? 'bg-white/10 text-white placeholder:text-white/60'
                         : 'bg-white/70 text-[#1f1b1f] placeholder:text-[#c6a7d9]'
@@ -183,7 +189,9 @@ const ContactForm = ({ isDark = false }) => {
                   placeholder="Share your idea here"
                   value={formValues.message}
                   onChange={handleChange}
-                  className={`mt-2 w-full rounded-[28px] border border-white/60 px-6 py-3 text-base shadow-[0_10px_35px_rgba(255,120,210,0.18)] transition focus-visible:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
+                  className={`mt-2 w-full rounded-[28px] border border-white/60 px-6 py-3 text-base transition focus-visible:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
+                    reduceEffects ? '' : 'shadow-[0_10px_35px_rgba(255,120,210,0.18)]'
+                  } ${
                     isDark
                       ? 'bg-white/10 text-white placeholder:text-white/60'
                       : 'bg-white/60 text-[#1f1b1f] placeholder:text-[#c6a7d9]'
@@ -198,9 +206,9 @@ const ContactForm = ({ isDark = false }) => {
               <span
                 className={`relative inline-flex h-10 w-10 items-center justify-center rounded-full border px-2 ${
                   isDark
-                    ? 'border-white/60 bg-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.4)]'
-                    : 'border-white/60 bg-white/70 shadow-[0_10px_35px_rgba(255,120,210,0.18)]'
-                }`}
+                    ? 'border-white/60 bg-white/10'
+                    : 'border-white/60 bg-white/70'
+                } ${reduceEffects ? '' : 'shadow-[0_10px_35px_rgba(0,0,0,0.2)]'}`}
               >
                 <input
                   type="checkbox"
@@ -219,7 +227,9 @@ const ContactForm = ({ isDark = false }) => {
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="w-full rounded-full border border-white/60 bg-gradient-to-r from-[#ffd15f] via-[#ff7bd5] to-[#b46bff] px-6 py-4 text-base font-semibold uppercase tracking-[0.4em] text-white shadow-[0_25px_60px_rgba(255,126,209,0.45)] transition hover:translate-y-[1px] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                className={`w-full rounded-full border border-white/60 bg-gradient-to-r from-[#ffd15f] via-[#ff7bd5] to-[#b46bff] px-6 py-4 text-base font-semibold uppercase tracking-[0.4em] text-white transition hover:translate-y-[1px] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60 ${
+                  reduceEffects ? '' : 'shadow-[0_25px_60px_rgba(255,126,209,0.45)]'
+                }`}
               >
                 {status === 'loading' ? 'Sending...' : 'Send'}
               </button>

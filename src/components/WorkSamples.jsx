@@ -20,7 +20,7 @@ const getVisibleCount = () => {
   return 4
 }
 
-const WorkSamples = ({ isDark = false }) => {
+const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [activeImage, setActiveImage] = useState(null)
   const [visibleCount, setVisibleCount] = useState(getVisibleCount)
@@ -112,7 +112,7 @@ const WorkSamples = ({ isDark = false }) => {
 
     animationFrame = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(animationFrame)
-  }, [shouldAnimate, totalSamples])
+  }, [shouldAnimate, totalSamples, visibleCount])
 
   const handlePointerEnter = () => {
     if (!shouldAnimate) return
@@ -209,15 +209,33 @@ const WorkSamples = ({ isDark = false }) => {
 
   const modalOverlayClasses = isDark ? 'bg-[#050308]/65' : 'bg-white/40'
   const modalPanelClasses = isDark
-    ? 'bg-white/5 text-white shadow-[0_50px_140px_rgba(0,0,0,0.65)] border border-white/20 backdrop-blur-2xl'
-    : 'bg-white/50 text-[#1b1a1e] shadow-[0_40px_120px_rgba(31,27,31,0.2)] border border-white/40 backdrop-blur-2xl'
+    ? reduceEffects
+      ? 'bg-[#1c1a25] text-white border border-white/15'
+      : 'bg-white/5 text-white shadow-[0_50px_140px_rgba(0,0,0,0.65)] border border-white/20 backdrop-blur-2xl'
+    : reduceEffects
+      ? 'bg-white text-[#1b1a1e] border border-[#1b1a1e]/15'
+      : 'bg-white/50 text-[#1b1a1e] shadow-[0_40px_120px_rgba(31,27,31,0.2)] border border-white/40 backdrop-blur-2xl'
   const modalCloseButtonClasses = isDark
-    ? 'border-white/40 text-white hover:bg-white/10 bg-black/30'
-    : 'border-white/60 text-[#1b1a1e] hover:bg-white/40 bg-white/30'
-  const modalGalleryWrapperClasses = isDark ? 'bg-white/5' : 'bg-white/40'
+    ? reduceEffects
+      ? 'border-white/30 text-white hover:bg-white/10 bg-transparent'
+      : 'border-white/40 text-white hover:bg-white/10 bg-black/30'
+    : reduceEffects
+      ? 'border-[#1b1a1e]/30 text-[#1b1a1e] bg-transparent hover:bg-black/5'
+      : 'border-white/60 text-[#1b1a1e] hover:bg-white/40 bg-white/30'
+  const modalGalleryWrapperClasses = isDark
+    ? reduceEffects
+      ? 'bg-transparent'
+      : 'bg-white/5'
+    : reduceEffects
+      ? 'bg-white'
+      : 'bg-white/40'
   const modalGridCardClasses = isDark
-    ? 'border-white/15 bg-white/5 shadow-[0_25px_60px_rgba(0,0,0,0.4)] hover:shadow-[0_35px_80px_rgba(0,0,0,0.55)]'
-    : 'border-white/60 bg-white/20 shadow-[0_25px_60px_rgba(31,27,31,0.12)] hover:shadow-[0_35px_80px_rgba(31,27,31,0.2)]'
+    ? reduceEffects
+      ? 'border-white/10 bg-black/40'
+      : 'border-white/15 bg-white/5 shadow-[0_25px_60px_rgba(0,0,0,0.4)] hover:shadow-[0_35px_80px_rgba(0,0,0,0.55)]'
+    : reduceEffects
+      ? 'border-[#1b1a1e]/15 bg-white'
+      : 'border-white/60 bg-white/20 shadow-[0_25px_60px_rgba(31,27,31,0.12)] hover:shadow-[0_35px_80px_rgba(31,27,31,0.2)]'
 
   return (
     <section className="px-4 py-16">
@@ -252,7 +270,11 @@ const WorkSamples = ({ isDark = false }) => {
               >
                 <div className="group flex h-full flex-col items-center justify-center rounded-[32px] bg-transparent transition hover:-translate-y-1">
                   <div
-                    className="relative w-full overflow-hidden rounded-[26px] border border-white/60 bg-white/20 backdrop-blur-sm transition hover:border-white cursor-pointer"
+                    className={`relative w-full overflow-hidden rounded-[26px] border transition cursor-pointer ${
+                      reduceEffects
+                        ? 'border-white/50 bg-white'
+                        : 'border-white/60 bg-white/20 backdrop-blur-sm hover:border-white'
+                    }`}
                     onClick={() => handleSampleClick(sample)}
                     onDragStart={(event) => event.preventDefault()}
                   >
@@ -284,7 +306,7 @@ const WorkSamples = ({ isDark = false }) => {
       </div>
       {isModalOpen && (
         <div
-          className={`fixed inset-0 z-40 flex items-center justify-center px-3 py-6 backdrop-blur transition sm:px-4 sm:py-10 ${modalOverlayClasses}`}
+          className={`fixed inset-0 z-40 flex items-center justify-center px-3 py-6 transition sm:px-4 sm:py-10 ${reduceEffects ? '' : 'backdrop-blur'} ${modalOverlayClasses}`}
           onClick={() => setIsModalOpen(false)}
         >
           <div
@@ -318,7 +340,9 @@ const WorkSamples = ({ isDark = false }) => {
                 {workSamples.map((sample) => (
                   <div
                     key={`grid-${sample}`}
-                    className={`group overflow-hidden rounded-[24px] backdrop-blur-sm cursor-pointer transition duration-300 hover:-translate-y-2 ${modalGridCardClasses}`}
+                    className={`group overflow-hidden rounded-[24px] cursor-pointer transition duration-300 hover:-translate-y-2 ${
+                      reduceEffects ? '' : 'backdrop-blur-sm'
+                    } ${modalGridCardClasses}`}
                     onClick={() => setActiveImage(sample)}
                   >
                     <img
@@ -335,11 +359,17 @@ const WorkSamples = ({ isDark = false }) => {
       )}
       {activeImage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-10 backdrop-blur-sm"
+          className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-10 ${
+            reduceEffects ? '' : 'backdrop-blur-sm'
+          }`}
           onClick={() => setActiveImage(null)}
         >
           <div
-            className="relative w-full max-w-4xl rounded-[36px] bg-white/10 p-2 shadow-[0_40px_120px_rgba(0,0,0,0.3)] backdrop-blur-lg border border-white/30"
+            className={`relative w-full max-w-4xl rounded-[36px] p-2 border ${
+              reduceEffects
+                ? 'bg-white text-[#1b1a1e] border-white/60'
+                : 'bg-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.3)] backdrop-blur-lg border-white/30'
+            }`}
             onClick={(event) => event.stopPropagation()}
           >
             <button

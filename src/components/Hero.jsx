@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
-import EggCanvas from './EggCanvas'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
-const Hero = ({ pointer, isDark = false }) => {
+const EggCanvas = lazy(() => import('./EggCanvas'))
+
+const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
   const baseText = isDark ? 'text-white' : 'text-[#1b1a1e]'
   const bodyText = isDark ? 'text-white/80' : 'text-[#3c3c3c]'
   const eggAreaRef = useRef(null)
@@ -12,49 +13,56 @@ const Hero = ({ pointer, isDark = false }) => {
   const [showScrubPrompt, setShowScrubPrompt] = useState(false)
   const [isBlinkingPrompt, setIsBlinkingPrompt] = useState(false)
 
-  const clearPromptTimers = () => {
+  const clearPromptTimers = useCallback(() => {
     promptTimers.current.forEach((timerId) => clearTimeout(timerId))
     promptTimers.current = []
-  }
+  }, [])
 
-  const clearIdlePromptTimer = () => {
+  const clearIdlePromptTimer = useCallback(() => {
     if (idlePromptTimer.current) {
       clearTimeout(idlePromptTimer.current)
       idlePromptTimer.current = null
     }
-  }
+  }, [])
 
-  const runPromptSequence = (mode) => {
-    clearPromptTimers()
-    if (mode === 'initial') {
-      setIsBlinkingPrompt(false)
-      setShowScrubPrompt(true)
-      const hideTimer = setTimeout(() => {
-        setShowScrubPrompt(false)
-      }, 1000)
-      promptTimers.current.push(hideTimer)
-      return
-    }
-    if (mode === 'blink') {
-      setIsBlinkingPrompt(true)
-      setShowScrubPrompt(true)
-      const hideTimer = setTimeout(() => {
-        setShowScrubPrompt(false)
+  const runPromptSequence = useCallback(
+    (mode) => {
+      clearPromptTimers()
+      if (mode === 'initial') {
         setIsBlinkingPrompt(false)
-      }, 1200)
-      promptTimers.current.push(hideTimer)
-    }
-  }
+        setShowScrubPrompt(true)
+        const hideTimer = setTimeout(() => {
+          setShowScrubPrompt(false)
+        }, 1000)
+        promptTimers.current.push(hideTimer)
+        return
+      }
+      if (mode === 'blink') {
+        setIsBlinkingPrompt(true)
+        setShowScrubPrompt(true)
+        const hideTimer = setTimeout(() => {
+          setShowScrubPrompt(false)
+          setIsBlinkingPrompt(false)
+        }, 1200)
+        promptTimers.current.push(hideTimer)
+      }
+    },
+    [clearPromptTimers]
+  )
 
-  const startIdlePromptCountdown = (contextCentered = isEggCentered) => {
-    clearIdlePromptTimer()
-    if (!hasShownInitialPrompt.current || !contextCentered) return
-    idlePromptTimer.current = setTimeout(() => {
-      if (!hasShownInitialPrompt.current) return
-      runPromptSequence('blink')
-      startIdlePromptCountdown()
-    }, 5000)
-  }
+  const startIdlePromptCountdown = useCallback(
+    function schedule(contextCentered) {
+      clearIdlePromptTimer()
+      const shouldCheck = typeof contextCentered === 'boolean' ? contextCentered : isEggCentered
+      if (!hasShownInitialPrompt.current || !shouldCheck) return
+      idlePromptTimer.current = setTimeout(() => {
+        if (!hasShownInitialPrompt.current) return
+        runPromptSequence('blink')
+        schedule()
+      }, 5000)
+    },
+    [clearIdlePromptTimer, isEggCentered, runPromptSequence]
+  )
 
   useEffect(() => {
     const evaluateEggPosition = () => {
@@ -79,12 +87,13 @@ const Hero = ({ pointer, isDark = false }) => {
       window.removeEventListener('scroll', evaluateEggPosition)
       window.removeEventListener('resize', evaluateEggPosition)
     }
-  }, [])
+  }, [startIdlePromptCountdown])
 
   useEffect(() => {
+    let animationFrame
     if (isEggCentered) {
       if (!hasShownInitialPrompt.current) {
-        runPromptSequence('initial')
+        animationFrame = requestAnimationFrame(() => runPromptSequence('initial'))
         hasShownInitialPrompt.current = true
       }
       startIdlePromptCountdown()
@@ -95,26 +104,33 @@ const Hero = ({ pointer, isDark = false }) => {
       clearPromptTimers()
       clearIdlePromptTimer()
     }
-  }, [isEggCentered])
+    return () => {
+      if (animationFrame) cancelAnimationFrame(animationFrame)
+    }
+  }, [clearIdlePromptTimer, clearPromptTimers, isEggCentered, runPromptSequence, startIdlePromptCountdown])
 
   useEffect(() => {
     return () => {
       clearPromptTimers()
       clearIdlePromptTimer()
     }
-  }, [])
+  }, [clearIdlePromptTimer, clearPromptTimers])
 
   return (
     <section className={`relative overflow-visible px-4 pb-10 pt-20 ${baseText} sm:pb-10 sm:pt-16`}>
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
-        <div className="relative h-72 w-[760px] max-w-full -translate-y-6">
-          <div className="absolute inset-x-0 top-2 mx-auto h-64 rounded-[999px] bg-[radial-gradient(circle_at_15%_30%,rgba(255,205,133,0.7),rgba(255,205,133,0))] blur-[55px]" />
-          <div className="absolute inset-x-[-20%] top-6 mx-auto h-60 rotate-[12deg] rounded-[999px] bg-[radial-gradient(circle_at_80%_30%,rgba(255,115,201,0.85),rgba(255,115,201,0))] blur-[85px]" />
-          <div className="absolute inset-x-[-25%] top-0 mx-auto h-64 rotate-[-6deg] rounded-[999px] bg-[radial-gradient(circle_at_30%_70%,rgba(255,165,0,0.45),rgba(255,165,0,0))] blur-[95px]" />
-        </div>
-      </div>
-      <div className="pointer-events-none absolute -left-16 top-1/3 hidden h-64 w-56 rotate-[12deg] rounded-full bg-[radial-gradient(circle_at_20%_20%,rgba(255,223,148,0.8),rgba(255,173,238,0.5),rgba(255,223,148,0))] opacity-80 blur-[55px] sm:block" />
-      <div className="pointer-events-none absolute -right-10 top-6 hidden h-56 w-52 rotate-[-18deg] rounded-full bg-[radial-gradient(circle_at_70%_30%,rgba(255,103,180,0.85),rgba(255,178,120,0.6),rgba(255,103,180,0))] opacity-80 blur-[55px] sm:block" />
+      {!reduceEffects && (
+        <>
+          <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
+            <div className="relative h-72 w-[760px] max-w-full -translate-y-6">
+              <div className="absolute inset-x-0 top-2 mx-auto h-64 rounded-[999px] bg-[radial-gradient(circle_at_15%_30%,rgba(255,205,133,0.7),rgba(255,205,133,0))] blur-[55px]" />
+              <div className="absolute inset-x-[-20%] top-6 mx-auto h-60 rotate-[12deg] rounded-[999px] bg-[radial-gradient(circle_at_80%_30%,rgba(255,115,201,0.85),rgba(255,115,201,0))] blur-[85px]" />
+              <div className="absolute inset-x-[-25%] top-0 mx-auto h-64 rotate-[-6deg] rounded-[999px] bg-[radial-gradient(circle_at_30%_70%,rgba(255,165,0,0.45),rgba(255,165,0,0))] blur-[95px]" />
+            </div>
+          </div>
+          <div className="pointer-events-none absolute -left-16 top-1/3 hidden h-64 w-56 rotate-[12deg] rounded-full bg-[radial-gradient(circle_at_20%_20%,rgba(255,223,148,0.8),rgba(255,173,238,0.5),rgba(255,223,148,0))] opacity-80 blur-[55px] sm:block" />
+          <div className="pointer-events-none absolute -right-10 top-6 hidden h-56 w-52 rotate-[-18deg] rounded-full bg-[radial-gradient(circle_at_70%_30%,rgba(255,103,180,0.85),rgba(255,178,120,0.6),rgba(255,103,180,0))] opacity-80 blur-[55px] sm:block" />
+        </>
+      )}
 
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-12">
         <div className="relative z-10 flex min-h-[220px] flex-col items-center gap-4 text-center sm:min-h-[260px] sm:gap-6">
@@ -124,12 +140,20 @@ const Hero = ({ pointer, isDark = false }) => {
             className="w-full max-w-[820px]"
           />
           <div
-            className={`rounded-[40px] border border-white/70 bg-white/20 px-6 py-4 text-[clamp(1.05rem,4vw,1.4rem)] font-bold uppercase tracking-[0.15em] sm:rounded-[48px] sm:px-10 sm:py-5 sm:text-[2.1rem] sm:tracking-[0.3em] ${
-              isDark ? 'text-[#1b1a1e]' : 'text-[#1b1a1e]'
-            } shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md`}
+            className={`rounded-[40px] border px-6 py-4 text-[clamp(1.05rem,4vw,1.4rem)] font-bold uppercase tracking-[0.15em] sm:rounded-[48px] sm:px-10 sm:py-5 sm:text-[2.1rem] sm:tracking-[0.3em] ${
+              isDark ? 'text-white' : 'text-[#1b1a1e]'
+            } ${
+              reduceEffects
+                ? 'border-white/60 bg-white/80 shadow-none'
+                : 'border-white/70 bg-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md'
+            }`}
           >
             WavyThought Creative Studio
-            <div className="mt-2 text-[clamp(0.65rem,3.2vw,0.85rem)] font-semibold tracking-[0.18em] text-[#ff67c4] sm:text-sm sm:tracking-[0.25em]">
+            <div
+              className={`mt-2 text-[clamp(0.65rem,3.2vw,0.85rem)] font-semibold tracking-[0.18em] sm:text-sm sm:tracking-[0.25em] ${
+                isDark ? 'text-white' : 'text-[#1b1a1e]'
+              }`}
+            >
               Playful minds - wavy ideas - dancing shadows
             </div>
           </div>
@@ -137,20 +161,30 @@ const Hero = ({ pointer, isDark = false }) => {
 
         <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
           <div className="flex w-full items-center justify-center lg:w-2/5">
-            <div
-              ref={eggAreaRef}
-              className="relative h-[300px] w-[210px] overflow-visible sm:h-[520px] sm:w-[380px]"
-            >
-              <EggCanvas pointer={pointer} />
+            <div ref={eggAreaRef} className="relative h-[300px] w-[210px] overflow-visible sm:h-[520px] sm:w-[380px]">
+              <Suspense
+                fallback={
+                  <div
+                    className={`flex h-full w-full items-center justify-center rounded-[36px] border ${
+                      isDark ? 'border-white/20 bg-black/20 text-white/60' : 'border-black/10 bg-white text-[#8b7b95]'
+                    } ${reduceEffects ? '' : 'backdrop-blur-sm shadow-[0_10px_35px_rgba(0,0,0,0.15)]'}`}
+                    aria-label="Loading sculpture"
+                  >
+                    <span className="text-[0.65rem] uppercase tracking-[0.4em]">Loading</span>
+                  </div>
+                }
+              >
+                <EggCanvas pointer={pointer} />
+              </Suspense>
               {showScrubPrompt && (
                 <div
-                  className={`pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full border px-3 py-1.5 text-[0.58rem] font-semibold uppercase tracking-[0.25em] shadow-[0_10px_25px_rgba(0,0,0,0.35)] backdrop-blur-lg sm:hidden ${
+                  className={`pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full border px-3 py-1.5 text-[0.58rem] font-semibold uppercase tracking-[0.25em] sm:hidden ${
                     isBlinkingPrompt ? 'animate-pulse' : ''
                   } ${
                     isDark
-                      ? 'border-white/40 bg-white/15 text-white/90'
+                      ? 'border-white/40 bg-[#0f0f0f]/80 text-white'
                       : 'border-[#1b1a1e]/15 bg-white/80 text-[#1b1a1e]'
-                  }`}
+                  } ${reduceEffects ? '' : 'shadow-[0_10px_25px_rgba(0,0,0,0.35)] backdrop-blur-lg'}`}
                 >
                   <span className="text-base leading-none">↔</span> Move
                 </div>
