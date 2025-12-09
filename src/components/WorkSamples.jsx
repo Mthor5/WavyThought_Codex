@@ -73,7 +73,6 @@ const WorkSamples = ({ isDark = false }) => {
     const slider = sliderRef.current
     if (!slider) return
 
-    let offset = offsetRef.current || 0
     let lastTime
     let animationFrame
 
@@ -97,6 +96,7 @@ const WorkSamples = ({ isDark = false }) => {
       }
 
       const speedPerMs = isHoveredRef.current ? hoverSpeedPerMs : baseSpeedPerMs
+      let offset = offsetRef.current || 0
       offset += delta * speedPerMs
       if (offset >= loopDistance) {
         offset -= loopDistance
@@ -154,11 +154,12 @@ const WorkSamples = ({ isDark = false }) => {
     dragStartOffsetRef.current = startOffset
     manualOffsetRef.current = dragStartOffsetRef.current
     slider.style.cursor = 'grabbing'
+    event.stopPropagation()
   }
 
   const handleDragMove = (event) => {
     if (!shouldAnimate || !isDraggingRef.current) return
-    const slider = sliderRef.current
+    let slider = sliderRef.current
     if (!slider) return
     const rect = slider.getBoundingClientRect()
     if (rect.width === 0) return
@@ -178,6 +179,7 @@ const WorkSamples = ({ isDark = false }) => {
     const slider = sliderRef.current
     if (slider) {
       slider.style.cursor = ''
+      slider.style.removeProperty('transform')
     }
     isDraggingRef.current = false
     isHoveredRef.current = false
