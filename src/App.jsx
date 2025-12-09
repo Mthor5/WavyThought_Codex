@@ -31,32 +31,56 @@ const App = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const connection =
+      navigator.connection || navigator.mozConnection || navigator.webkitConnection || null
 
     const evaluateDeviceCapabilities = () => {
-      const prefersReducedMotion = mediaQuery.matches
-      const lowCores = typeof navigator !== 'undefined' && navigator.hardwareConcurrency
-        ? navigator.hardwareConcurrency <= 4
-        : false
-      const lowMemory = typeof navigator !== 'undefined' && navigator.deviceMemory
-        ? navigator.deviceMemory <= 4
-        : false
-      setReduceEffects(prefersReducedMotion || lowCores || lowMemory)
+      const prefersReducedMotion = motionQuery.matches
+      const hardwareCount =
+        typeof navigator.hardwareConcurrency === 'number' ? navigator.hardwareConcurrency : undefined
+      const memorySize =
+        typeof navigator.deviceMemory === 'number' ? navigator.deviceMemory : undefined
+      const effectiveType = connection?.effectiveType
+      const saveData = Boolean(connection?.saveData)
+
+      const slowConnection =
+        saveData || (typeof effectiveType === 'string' && ['slow-2g', '2g', '3g'].includes(effectiveType))
+      const lowCores = typeof hardwareCount === 'number' && hardwareCount <= 2
+      const lowMemory = typeof memorySize === 'number' && memorySize <= 2
+
+      setReduceEffects(prefersReducedMotion || slowConnection || lowCores || lowMemory)
     }
 
     evaluateDeviceCapabilities()
-    const listener = () => evaluateDeviceCapabilities()
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', listener)
+    const motionListener = () => evaluateDeviceCapabilities()
+    if (motionQuery.addEventListener) {
+      motionQuery.addEventListener('change', motionListener)
     } else {
-      mediaQuery.addListener(listener)
+      motionQuery.addListener(motionListener)
+    }
+
+    const connectionListener = connection ? () => evaluateDeviceCapabilities() : null
+    if (connection && connectionListener) {
+      if (typeof connection.addEventListener === 'function') {
+        connection.addEventListener('change', connectionListener)
+      } else if ('onchange' in connection) {
+        connection.onchange = connectionListener
+      }
     }
 
     return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', listener)
+      if (motionQuery.removeEventListener) {
+        motionQuery.removeEventListener('change', motionListener)
       } else {
-        mediaQuery.removeListener(listener)
+        motionQuery.removeListener(motionListener)
+      }
+      if (connection && connectionListener) {
+        if (typeof connection.removeEventListener === 'function') {
+          connection.removeEventListener('change', connectionListener)
+        } else if ('onchange' in connection) {
+          connection.onchange = null
+        }
       }
     }
   }, [])
