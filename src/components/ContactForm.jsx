@@ -4,7 +4,6 @@ const initialFormValues = {
   name: '',
   email: '',
   message: '',
-  subscribe: true,
 }
 
 const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit'
@@ -14,16 +13,19 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
   const [formValues, setFormValues] = useState(initialFormValues)
   const [status, setStatus] = useState('idle')
   const [feedback, setFeedback] = useState('')
+  const [subscribeEmail, setSubscribeEmail] = useState('')
+  const [subscribeStatus, setSubscribeStatus] = useState('idle')
+  const [subscribeFeedback, setSubscribeFeedback] = useState('')
   const rawAccessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || DEFAULT_WEB3FORMS_ACCESS_KEY
   const accessKey = rawAccessKey?.trim() || ''
   const fallbackEndpoint = import.meta.env.VITE_CONTACT_ENDPOINT || '/api/contact'
   const shouldUseWeb3Forms = Boolean(accessKey)
 
   const handleChange = (event) => {
-    const { name, value, type, checked } = event.target
+    const { name, value } = event.target
     setFormValues((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value,
     }))
     if (status !== 'idle') {
       setStatus('idle')
@@ -44,8 +46,8 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
 
     try {
       const successMessage = shouldUseWeb3Forms
-        ? await submitViaWeb3Forms()
-        : await submitViaBackend()
+        ? await submitInquiryViaWeb3Forms()
+        : await submitInquiryViaBackend()
 
       setStatus('success')
       setFeedback(successMessage)
@@ -56,7 +58,7 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
     }
   }
 
-  const submitViaWeb3Forms = async () => {
+  const submitInquiryViaWeb3Forms = async () => {
     const payload = new FormData()
     payload.append('access_key', accessKey)
     payload.append('apikey', accessKey)
@@ -66,7 +68,6 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
     payload.append('name', formValues.name)
     payload.append('email', formValues.email)
     payload.append('message', formValues.message)
-    payload.append('subscribe', formValues.subscribe ? 'Yes, please add me' : 'No, thanks')
 
     const response = await fetch(WEB3FORMS_ENDPOINT, {
       method: 'POST',
@@ -85,7 +86,7 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
     return result?.message || 'Thank you for the wave! We will respond shortly.'
   }
 
-  const submitViaBackend = async () => {
+  const submitInquiryViaBackend = async () => {
     const response = await fetch(fallbackEndpoint, {
       method: 'POST',
       headers: {
@@ -96,7 +97,6 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
         name: formValues.name,
         email: formValues.email,
         message: formValues.message,
-        subscribe: formValues.subscribe,
       }),
     })
 
@@ -107,6 +107,89 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
 
     const result = await response.json().catch(() => ({}))
     return result?.message || 'Your note is on its way. Talk soon!'
+  }
+
+  const handleSubscribeChange = (event) => {
+    setSubscribeEmail(event.target.value)
+    if (subscribeStatus !== 'idle') {
+      setSubscribeStatus('idle')
+      setSubscribeFeedback('')
+    }
+  }
+
+  const handleSubscribeSubmit = async (event) => {
+    event.preventDefault()
+    if (!subscribeEmail.trim()) {
+      setSubscribeStatus('error')
+      setSubscribeFeedback('Please enter an email to subscribe.')
+      return
+    }
+
+    setSubscribeStatus('loading')
+    setSubscribeFeedback('Adding you to the wave list...')
+    try {
+      const message = shouldUseWeb3Forms
+        ? await submitNewsletterOptIn()
+        : await submitNewsletterToBackend()
+      setSubscribeStatus('success')
+      setSubscribeFeedback(message)
+      setSubscribeEmail('')
+    } catch (error) {
+      setSubscribeStatus('error')
+      setSubscribeFeedback(
+        error.message || 'Unable to add you right now. Please try again shortly.'
+      )
+    }
+  }
+
+  const submitNewsletterOptIn = async () => {
+    const payload = new FormData()
+    payload.append('access_key', accessKey)
+    payload.append('apikey', accessKey)
+    payload.append('from_name', 'WavyThought Newsletter')
+    payload.append('subject', 'Newsletter opt-in')
+    payload.append('reply_to', subscribeEmail)
+    payload.append('email', subscribeEmail)
+    payload.append('subscribe', 'Newsletter signup only')
+
+    const response = await fetch(WEB3FORMS_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+      },
+      body: payload,
+    })
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data?.message || 'Something unexpected happened.')
+    }
+
+    const result = await response.json()
+    return result?.message || 'Thanks for joining the wave. Check your inbox soon!'
+  }
+
+  const submitNewsletterToBackend = async () => {
+    const response = await fetch(fallbackEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        email: subscribeEmail,
+        subscribe: true,
+        newsletterOnly: true,
+      }),
+    })
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data?.message || 'Email service is currently unavailable.')
+    }
+
+    const result = await response.json().catch(() => ({}))
+    return result?.message || 'Thanks for joining the wave. Check your inbox soon!'
   }
 
   return (
@@ -200,29 +283,6 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
                 />
               </label>
             </div>
-            <label
-              className={`mt-6 flex items-center gap-4 text-sm ${isDark ? 'text-white/80' : 'text-[#6c5e7d]'}`}
-            >
-              <span
-                className={`relative inline-flex h-10 w-10 items-center justify-center rounded-full border px-2 ${
-                  isDark
-                    ? 'border-white/60 bg-white/10'
-                    : 'border-white/60 bg-white/70'
-                } ${reduceEffects ? '' : 'shadow-[0_10px_35px_rgba(0,0,0,0.2)]'}`}
-              >
-                <input
-                  type="checkbox"
-                  name="subscribe"
-                  checked={formValues.subscribe}
-                  onChange={handleChange}
-                  className="peer absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full"
-                />
-                <span className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity peer-checked:opacity-100">
-                  <img src="/Single smile.png" alt="Smile active" className="h-7 w-7 object-contain" />
-                </span>
-              </span>
-              Sign me up for updates and promotions from WavyThought
-            </label>
             <div className="mt-8 space-y-3">
               <button
                 type="submit"
@@ -240,6 +300,63 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
             </div>
           </div>
         </form>
+      </div>
+      <div className="relative mx-auto mt-10 max-w-[44rem] px-3 sm:px-8">
+        <div
+          className={`rounded-[48px] border border-white/70 p-[1.5px] sm:ml-12 sm:mr-4 ${
+            reduceEffects ? 'shadow-none' : 'shadow-[0_45px_120px_rgba(31,27,31,0.25)]'
+          } ${
+            isDark
+              ? 'bg-gradient-to-br from-[#292734] via-[#28243a] to-[#1b1a20]'
+              : 'bg-gradient-to-br from-[#ffe48f] via-[#ffb4f3] to-[#c179ff]'
+          }`}
+        >
+          <form
+            onSubmit={handleSubscribeSubmit}
+            className={`m-3 flex flex-col gap-4 rounded-[36px] px-6 py-6 text-center ${
+              isDark ? 'bg-white/5 text-white' : 'bg-gradient-to-b from-white/80 via-white/70 to-white/55'
+            } ${reduceEffects ? '' : 'backdrop-blur-[2px] shadow-[0_15px_45px_rgba(0,0,0,0.15)]'}`}
+          >
+            <p className="text-sm font-semibold uppercase tracking-[0.25em]">
+              Sign up for email list
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+              <input
+                type="email"
+                name="newsletter"
+                value={subscribeEmail}
+                onChange={handleSubscribeChange}
+                placeholder="Email"
+                className={`w-full rounded-[28px] border border-white/60 px-6 py-3 text-base transition focus-visible:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:max-w-md ${
+                  reduceEffects ? '' : 'shadow-[0_10px_35px_rgba(255,120,210,0.18)]'
+                } ${
+                  isDark
+                    ? 'bg-white/10 text-white placeholder:text-white/60'
+                    : 'bg-white/80 text-[#1f1b1f] placeholder:text-[#a07dbc]'
+                }`}
+                required
+              />
+              <button
+                type="submit"
+                disabled={subscribeStatus === 'loading'}
+                className={`rounded-full border border-white/60 bg-gradient-to-r from-[#ffd15f] via-[#ff7bd5] to-[#b46bff] px-8 py-3 text-sm font-semibold uppercase tracking-[0.4em] text-white transition hover:translate-y-[1px] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70 ${
+                  reduceEffects ? '' : 'shadow-[0_20px_50px_rgba(255,126,209,0.35)]'
+                }`}
+              >
+                {subscribeStatus === 'loading' ? 'Sending…' : 'Send'}
+              </button>
+            </div>
+          </form>
+          {subscribeFeedback && (
+            <p
+              className={`px-6 pb-5 text-center text-xs ${
+                isDark ? 'text-white/70' : 'text-[#6c5e7d]'
+              }`}
+            >
+              {subscribeFeedback}
+            </p>
+          )}
+        </div>
       </div>
     </section>
   )

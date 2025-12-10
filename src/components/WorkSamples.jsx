@@ -372,7 +372,7 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
               type="button"
               aria-label="Close gallery"
               onClick={() => setIsModalOpen(false)}
-              className={`absolute right-4 top-4 h-10 w-10 rounded-full text-xl font-semibold transition sm:right-6 sm:top-6 ${modalCloseButtonClasses}`}
+              className={`absolute right-4 top-4 z-30 h-10 w-10 rounded-full text-xl font-semibold transition sm:right-6 sm:top-6 ${modalCloseButtonClasses}`}
             >
               ×
             </button>
