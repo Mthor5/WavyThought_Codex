@@ -4,9 +4,14 @@ import Hero from './components/Hero'
 const WorkSamples = lazy(() => import('./components/WorkSamples'))
 const ContactForm = lazy(() => import('./components/ContactForm'))
 
+const getSystemPrefersDark = () => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
 const App = () => {
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
-  const [lightsOff, setLightsOff] = useState(false)
+  const [lightsOff, setLightsOff] = useState(() => getSystemPrefersDark())
   const [showScrollToTop, setShowScrollToTop] = useState(false)
   const [reduceEffects, setReduceEffects] = useState(false)
   const [showBazaarPoster, setShowBazaarPoster] = useState(false)
@@ -19,6 +24,27 @@ const App = () => {
       body.classList.remove('lights-off')
     }
   }, [lightsOff])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined
+    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleColorSchemeChange = (event) => {
+      setLightsOff(event.matches)
+    }
+    setLightsOff(colorSchemeQuery.matches)
+    if (typeof colorSchemeQuery.addEventListener === 'function') {
+      colorSchemeQuery.addEventListener('change', handleColorSchemeChange)
+    } else if (typeof colorSchemeQuery.addListener === 'function') {
+      colorSchemeQuery.addListener(handleColorSchemeChange)
+    }
+    return () => {
+      if (typeof colorSchemeQuery.removeEventListener === 'function') {
+        colorSchemeQuery.removeEventListener('change', handleColorSchemeChange)
+      } else if (typeof colorSchemeQuery.removeListener === 'function') {
+        colorSchemeQuery.removeListener(handleColorSchemeChange)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
