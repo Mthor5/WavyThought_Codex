@@ -8,13 +8,17 @@ const EggModel = ({ pointer }) => {
 
   scene.traverse((child) => {
     if (child.isMesh && child.material) {
-      child.material.color.set('#ffe7f9')
-      child.material.emissive?.set('#ffc0e3')
-      child.material.metalness = 0.08
-      child.material.roughness = 0.25
-      if (child.material.sheenColor) {
-        child.material.sheenColor.set('#ffd97a')
-      }
+      child.material = child.material.clone()
+      child.material.color.set('#ffd4ea')
+      child.material.emissive?.set('#ffb893')
+      child.material.metalness = 0.25
+      child.material.roughness = 0.2
+      child.material.clearcoat = 0.6
+      child.material.clearcoatRoughness = 0.08
+      child.material.sheen = 0.65
+      child.material.sheenColor?.set('#ffe3f8')
+      child.material.sheenRoughness = 0.25
+      child.material.needsUpdate = true
     }
   })
 
@@ -49,10 +53,10 @@ const EggCanvas = ({ pointer }) => {
       className="h-full w-full"
     >
       <Suspense fallback={null}>
-        <ambientLight intensity={0.8} color="#fff4e1" />
-        <directionalLight position={[2, 3, 2]} intensity={1} color="#ffd6f1" castShadow />
-        <directionalLight position={[-4, -2, -4]} intensity={0.25} color="#ffbb7a" />
-        <spotLight position={[0, 5, 5]} intensity={0.45} penumbra={1} angle={0.8} color="#ff9de5" />
+        <ambientLight intensity={0.7} color="#ffe9db" />
+        <directionalLight position={[2, 3, 2]} intensity={1} color="#ffd6a7" castShadow />
+        <directionalLight position={[-4, -2, -4]} intensity={0.35} color="#ff9bcd" />
+        <spotLight position={[0, 5, 5]} intensity={0.5} penumbra={1} angle={0.8} color="#fff1eb" />
         <EggModel pointer={pointer} />
         <ContactShadows
           position={[0, -4.6, 0]}
@@ -62,7 +66,7 @@ const EggCanvas = ({ pointer }) => {
           far={6}
           color="#020205"
         />
-        <Environment preset="studio" />
+        <Environment preset="sunset" />
       </Suspense>
     </Canvas>
   )
