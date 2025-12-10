@@ -176,7 +176,10 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
           <div className="pointer-events-none absolute right-6 top-[52%] hidden h-32 w-32 translate-x-1/4 rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,215,190,0.65),rgba(255,160,220,0.35),rgba(255,215,190,0))] blur-[55px] sm:block" />
           <div className="pointer-events-none absolute right-4 top-[55%] h-24 w-24 rounded-full bg-[radial-gradient(circle_at_40%_40%,rgba(255,220,200,0.6),rgba(255,140,210,0.35),rgba(255,220,200,0))] blur-[45px] sm:hidden" />
           <div className="flex w-full items-center justify-center lg:w-2/5">
-            <div ref={eggAreaRef} className="relative h-[300px] w-[210px] overflow-visible sm:h-[520px] sm:w-[380px]">
+            <div
+              ref={eggAreaRef}
+              className="relative h-[360px] w-full max-w-[360px] overflow-visible sm:h-[520px] sm:w-[380px] sm:max-w-none"
+            >
               <Suspense
                 fallback={
                   <div

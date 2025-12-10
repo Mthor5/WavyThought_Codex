@@ -1,8 +1,8 @@
-import { Suspense, useMemo, useRef } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { ContactShadows, Environment, useGLTF } from '@react-three/drei'
 
-const EggModel = ({ pointer }) => {
+const EggModel = ({ pointer, scale = 310 }) => {
   const group = useRef()
   const { scene } = useGLTF('/models/egg-crete-ball.glb')
 
@@ -39,17 +39,56 @@ const EggModel = ({ pointer }) => {
     group.current.position.y += (targetY - group.current.position.y) * 0.25 * (1 + delta * 30)
   })
 
-  return <primitive ref={group} object={scene} dispose={null} scale={310} />
+  return <primitive ref={group} object={scene} dispose={null} scale={scale} />
+}
+
+const useIsMobileViewport = () => {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(max-width: 639px)').matches
+  })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const mediaQuery = window.matchMedia('(max-width: 639px)')
+    const handleChange = (event) => setIsMobile(event.matches)
+    setIsMobile(mediaQuery.matches)
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange)
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(handleChange)
+    }
+    return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleChange)
+      } else if (typeof mediaQuery.removeListener === 'function') {
+        mediaQuery.removeListener(handleChange)
+      }
+    }
+  }, [])
+
+  return isMobile
 }
 
 const EggCanvas = ({ pointer }) => {
-  const cameraPosition = useMemo(() => [0, 0.4, 18], [])
+  const isMobile = useIsMobileViewport()
+  const canvasKey = isMobile ? 'egg-mobile' : 'egg-desktop'
+  const cameraSettings = useMemo(
+    () => ({
+      position: isMobile ? [0, 0.3, 17] : [0, 0.4, 18],
+      fov: isMobile ? 40 : 45,
+    }),
+    [isMobile]
+  )
+  const modelScale = useMemo(() => (isMobile ? 370 : 310), [isMobile])
+  const shadowScale = useMemo(() => (isMobile ? 20 : 18), [isMobile])
 
   return (
     <Canvas
+      key={canvasKey}
       shadows
       gl={{ antialias: true, alpha: true }}
-      camera={{ position: cameraPosition, fov: 45 }}
+      camera={cameraSettings}
       className="h-full w-full"
     >
       <Suspense fallback={null}>
@@ -57,12 +96,12 @@ const EggCanvas = ({ pointer }) => {
         <directionalLight position={[2, 3, 2]} intensity={1} color="#ffd6a7" castShadow />
         <directionalLight position={[-4, -2, -4]} intensity={0.35} color="#ff9bcd" />
         <spotLight position={[0, 5, 5]} intensity={0.5} penumbra={1} angle={0.8} color="#fff1eb" />
-        <EggModel pointer={pointer} />
+        <EggModel pointer={pointer} scale={modelScale} />
         <ContactShadows
           position={[0, -4.6, 0]}
           opacity={0.14}
           blur={5.2}
-          scale={18}
+          scale={shadowScale}
           far={6}
           color="#020205"
         />
