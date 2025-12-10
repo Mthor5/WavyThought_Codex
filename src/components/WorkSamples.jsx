@@ -46,7 +46,7 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
   const [activeSampleIndex, setActiveSampleIndex] = useState(null)
   const [visibleCount, setVisibleCount] = useState(getVisibleCount)
   const totalSamples = workSamples.length
-  const shouldAnimate = totalSamples > visibleCount
+  const shouldAnimate = totalSamples > visibleCount && !reduceEffects
 
   const sliderRef = useRef(null)
   const isHoveredRef = useRef(false)
@@ -151,13 +151,13 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
   }
 
   const handlePointerMove = (event) => {
-    if (!shouldAnimate) return
-    if (isDraggingRef.current) return
+    if (!shouldAnimate || isDraggingRef.current) return
     const slider = sliderRef.current
     if (!slider) return
     const rect = slider.getBoundingClientRect()
-    const relativeX = (event.clientX - rect.left) / rect.width
-    const driftRange = (100 / visibleCount) * 0.4
+    if (!rect.width) return
+    const relativeX = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width))
+    const driftRange = (100 / visibleCount) * 0.12
     targetDriftRef.current = (relativeX - 0.5) * driftRange
   }
 

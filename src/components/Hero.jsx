@@ -5,6 +5,13 @@ const EggCanvas = lazy(() => import('./EggCanvas'))
 const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
   const baseText = isDark ? 'text-white' : 'text-[#1b1a1e]'
   const bodyText = isDark ? 'text-white/80' : 'text-[#3c3c3c]'
+  const heroGlassClass = reduceEffects
+    ? isDark
+      ? 'border-white/40 bg-white/10'
+      : 'border-[#1b1a1e]/15 bg-white/80'
+    : isDark
+      ? 'glass-panel-dark'
+      : 'glass-panel-light'
   const eggAreaRef = useRef(null)
   const promptTimers = useRef([])
   const idlePromptTimer = useRef(null)
@@ -149,11 +156,7 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
           <div
             className={`rounded-[40px] border px-6 py-4 text-[clamp(1.05rem,4vw,1.4rem)] font-bold uppercase tracking-[0.15em] sm:rounded-[48px] sm:px-10 sm:py-5 sm:text-[2.1rem] sm:tracking-[0.3em] ${
               isDark ? 'text-white' : 'text-[#1b1a1e]'
-            } ${
-              reduceEffects
-                ? 'border-white/50 bg-white/40 shadow-none backdrop-blur-xl'
-                : 'border-white/60 bg-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.14)] backdrop-blur-2xl'
-            }`}
+            } ${heroGlassClass}`}
           >
             WavyThought Creative Studio
             <div

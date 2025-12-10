@@ -129,6 +129,9 @@ const App = () => {
   const scrollToTopButtonVisibility = showScrollToTop
     ? 'opacity-100 pointer-events-auto translate-y-0'
     : 'opacity-0 pointer-events-none translate-y-4'
+  const bannerGlassClass = lightsOff
+    ? 'glass-panel-dark text-white'
+    : 'glass-panel-light text-[#1f1b1f]'
 
   const scrollToTop = () => {
     if (typeof window === 'undefined') return
@@ -181,11 +184,7 @@ const App = () => {
       </div>
       <button
         type="button"
-        className={`fixed left-0 right-0 top-0 z-[60] w-full overflow-hidden border-b text-xs uppercase tracking-[0.3em] ${
-          lightsOff
-            ? 'border-white/25 bg-[#16131c]/80 text-white backdrop-blur-lg shadow-[0_10px_40px_rgba(0,0,0,0.45)]'
-            : 'border-[#1f1b1f]/20 bg-white/35 text-[#1f1b1f] backdrop-blur-2xl shadow-[0_12px_40px_rgba(12,10,18,0.12)]'
-        }`}
+        className={`fixed left-0 right-0 top-0 z-[60] w-full overflow-hidden text-xs uppercase tracking-[0.3em] ${bannerGlassClass}`}
         role="region"
         aria-label="Holiday event announcement"
         onClick={() => setShowBazaarPoster(true)}
