@@ -412,7 +412,7 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
       </div>
       {isModalOpen && (
         <div
-          className={`fixed inset-0 z-40 flex items-center justify-center px-3 py-6 transition sm:px-4 sm:py-10 ${reduceEffects ? '' : 'backdrop-blur'} ${modalOverlayClasses}`}
+          className={`fixed inset-0 z-40 flex items-start justify-center px-3 pb-[60px] pt-[60px] transition sm:items-center sm:px-4 sm:py-10 ${reduceEffects ? '' : 'backdrop-blur'} ${modalOverlayClasses}`}
           onClick={() => setIsModalOpen(false)}
           style={{ touchAction: 'none' }}
         >
