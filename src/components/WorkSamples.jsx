@@ -362,6 +362,7 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
         <div
           className={`fixed inset-0 z-40 flex items-center justify-center px-3 py-6 transition sm:px-4 sm:py-10 ${reduceEffects ? '' : 'backdrop-blur'} ${modalOverlayClasses}`}
           onClick={() => setIsModalOpen(false)}
+          style={{ touchAction: 'none' }}
         >
           <div
             className={`relative mx-auto flex h-full w-full max-w-6xl flex-col rounded-[28px] p-4 transition-colors sm:rounded-[42px] sm:p-8 ${modalPanelClasses}`}
@@ -417,6 +418,7 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
             reduceEffects ? '' : 'backdrop-blur-sm'
           }`}
           onClick={closeActiveImage}
+          style={{ touchAction: 'none' }}
         >
           <div
             className={`relative w-full max-w-4xl rounded-[36px] p-2 border ${
