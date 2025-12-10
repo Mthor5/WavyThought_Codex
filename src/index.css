@@ -130,3 +130,9 @@ body.lights-off .glass-scroll::-webkit-scrollbar-thumb {
     transform: translateX(-50%);
   }
 }
+
+@media (max-width: 640px) {
+  body.modal-open .site-top-banner {
+    display: none;
+  }
+}

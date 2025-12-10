@@ -75,11 +75,25 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
   }, [])
 
   useEffect(() => {
-    if (!isModalOpen && activeSampleIndex === null) return
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    if (!isModalOpen && activeSampleIndex === null) return undefined
+    if (typeof document === 'undefined') return undefined
+    const { body } = document
+    const currentLocks = Number(body.dataset.modalLocks || '0')
+    if (currentLocks === 0) {
+      body.dataset.prevOverflow = body.style.overflow || ''
+      body.style.overflow = 'hidden'
+    }
+    body.dataset.modalLocks = String(currentLocks + 1)
+    body.classList.add('modal-open')
     return () => {
-      document.body.style.overflow = previousOverflow
+      const locks = Number(body.dataset.modalLocks || '1')
+      const next = Math.max(0, locks - 1)
+      body.dataset.modalLocks = String(next)
+      if (next === 0) {
+        body.style.overflow = body.dataset.prevOverflow || ''
+        delete body.dataset.prevOverflow
+        body.classList.remove('modal-open')
+      }
     }
   }, [isModalOpen, activeSampleIndex])
 

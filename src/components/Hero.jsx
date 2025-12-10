@@ -7,8 +7,8 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
   const bodyText = isDark ? 'text-white/80' : 'text-[#3c3c3c]'
   const heroGlassClass = reduceEffects
     ? isDark
-      ? 'border-white/40 bg-white/10'
-      : 'border-[#1b1a1e]/15 bg-white/80'
+      ? 'border-white/50 bg-white/10 backdrop-blur-md'
+      : 'border-[#1b1a1e]/20 bg-white/80 backdrop-blur-md'
     : isDark
       ? 'glass-panel-dark'
       : 'glass-panel-light'
@@ -172,6 +172,9 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
         <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
           <div className="pointer-events-none absolute left-0 top-[32%] h-20 w-20 rounded-full bg-[radial-gradient(circle_at_40%_40%,rgba(255,200,90,0.85),rgba(255,200,90,0))] blur-[35px] sm:hidden" />
           <div className="pointer-events-none absolute left-10 top-[33%] h-16 w-16 rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,120,210,0.9),rgba(255,120,210,0))] blur-[28px] sm:hidden" />
+          <div className="pointer-events-none absolute right-[6%] top-[20%] h-16 w-16 rounded-full bg-[radial-gradient(circle_at_40%_40%,rgba(255,180,210,0.75),rgba(255,120,210,0.4),rgba(255,180,210,0))] blur-[45px]" />
+          <div className="pointer-events-none absolute right-6 top-[52%] hidden h-32 w-32 translate-x-1/4 rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,215,190,0.65),rgba(255,160,220,0.35),rgba(255,215,190,0))] blur-[55px] sm:block" />
+          <div className="pointer-events-none absolute right-4 top-[55%] h-24 w-24 rounded-full bg-[radial-gradient(circle_at_40%_40%,rgba(255,220,200,0.6),rgba(255,140,210,0.35),rgba(255,220,200,0))] blur-[45px] sm:hidden" />
           <div className="flex w-full items-center justify-center lg:w-2/5">
             <div ref={eggAreaRef} className="relative h-[300px] w-[210px] overflow-visible sm:h-[520px] sm:w-[380px]">
               <Suspense

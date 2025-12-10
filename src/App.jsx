@@ -44,6 +44,29 @@ const App = () => {
   }, [showBazaarPoster])
 
   useEffect(() => {
+    if (!showBazaarPoster) return undefined
+    if (typeof document === 'undefined') return undefined
+    const { body } = document
+    const currentLocks = Number(body.dataset.modalLocks || '0')
+    if (currentLocks === 0) {
+      body.dataset.prevOverflow = body.style.overflow || ''
+      body.style.overflow = 'hidden'
+    }
+    body.dataset.modalLocks = String(currentLocks + 1)
+    body.classList.add('modal-open')
+    return () => {
+      const locks = Number(body.dataset.modalLocks || '1')
+      const next = Math.max(0, locks - 1)
+      body.dataset.modalLocks = String(next)
+      if (next === 0) {
+        body.style.overflow = body.dataset.prevOverflow || ''
+        delete body.dataset.prevOverflow
+        body.classList.remove('modal-open')
+      }
+    }
+  }, [showBazaarPoster])
+
+  useEffect(() => {
     if (typeof window === 'undefined') return undefined
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     const connection =
@@ -184,7 +207,7 @@ const App = () => {
       </div>
       <button
         type="button"
-        className={`fixed left-0 right-0 top-0 z-[60] w-full overflow-hidden text-xs uppercase tracking-[0.3em] ${bannerGlassClass}`}
+        className={`site-top-banner fixed left-0 right-0 top-0 z-[60] w-full overflow-hidden text-xs uppercase tracking-[0.3em] ${bannerGlassClass}`}
         role="region"
         aria-label="Holiday event announcement"
         onClick={() => setShowBazaarPoster(true)}
