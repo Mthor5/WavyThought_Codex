@@ -22,7 +22,7 @@ const getVisibleCount = () => {
 
 const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [activeImage, setActiveImage] = useState(null)
+  const [activeSampleIndex, setActiveSampleIndex] = useState(null)
   const [visibleCount, setVisibleCount] = useState(getVisibleCount)
   const totalSamples = workSamples.length
   const shouldAnimate = totalSamples > visibleCount
@@ -54,13 +54,13 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
   }, [])
 
   useEffect(() => {
-    if (!isModalOpen && !activeImage) return
+    if (!isModalOpen && activeSampleIndex === null) return
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = previousOverflow
     }
-  }, [isModalOpen, activeImage])
+  }, [isModalOpen, activeSampleIndex])
 
   useEffect(() => {
     if (!shouldAnimate && sliderRef.current) {
@@ -204,7 +204,46 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
       dragMovedRef.current = false
       return
     }
-    setActiveImage(sample)
+    const index = workSamples.findIndex((item) => item === sample)
+    if (index !== -1) {
+      setActiveSampleIndex(index)
+    }
+  }
+
+  const closeActiveImage = () => setActiveSampleIndex(null)
+  const showNextImage = () => {
+    if (activeSampleIndex === null) return
+    setActiveSampleIndex((prev) => (prev + 1) % workSamples.length)
+  }
+  const showPrevImage = () => {
+    if (activeSampleIndex === null) return
+    setActiveSampleIndex((prev) => (prev - 1 + workSamples.length) % workSamples.length)
+  }
+
+  const touchStartXRef = useRef(null)
+  const touchStartYRef = useRef(null)
+
+  const handleTouchStart = (event) => {
+    const touch = event.touches[0]
+    if (!touch) return
+    touchStartXRef.current = touch.clientX
+    touchStartYRef.current = touch.clientY
+  }
+
+  const handleTouchEnd = (event) => {
+    if (touchStartXRef.current === null) return
+    const touch = event.changedTouches[0]
+    if (!touch) return
+    const deltaX = touch.clientX - touchStartXRef.current
+    const deltaY = Math.abs(touch.clientY - (touchStartYRef.current || 0))
+    touchStartXRef.current = null
+    touchStartYRef.current = null
+    if (Math.abs(deltaX) < 40 || deltaY > 80) return
+    if (deltaX > 0) {
+      showPrevImage()
+    } else {
+      showNextImage()
+    }
   }
 
   const modalOverlayClasses = isDark ? 'bg-[#050308]/65' : 'bg-white/40'
@@ -343,7 +382,7 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
                     className={`group overflow-hidden rounded-[24px] cursor-pointer transition duration-300 hover:-translate-y-2 ${
                       reduceEffects ? '' : 'backdrop-blur-sm'
                     } ${modalGridCardClasses}`}
-                    onClick={() => setActiveImage(sample)}
+                    onClick={() => handleSampleClick(sample)}
                   >
                     <img
                       src={`/Work Samples/${sample}`}
@@ -357,12 +396,12 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
           </div>
         </div>
       )}
-      {activeImage && (
+      {activeSampleIndex !== null && (
         <div
           className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-10 ${
             reduceEffects ? '' : 'backdrop-blur-sm'
           }`}
-          onClick={() => setActiveImage(null)}
+          onClick={closeActiveImage}
         >
           <div
             className={`relative w-full max-w-4xl rounded-[36px] p-2 border ${
@@ -375,15 +414,36 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
             <button
               type="button"
               aria-label="Close image"
-              onClick={() => setActiveImage(null)}
+              onClick={closeActiveImage}
               className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/80 bg-black/40 text-lg font-semibold text-white transition hover:bg-black/60"
             >
               ×
             </button>
-            <div className="flex items-center justify-center rounded-[28px] bg-transparent p-2">
+            <button
+              type="button"
+              onClick={showPrevImage}
+              className="absolute left-4 top-1/2 hidden -translate-y-1/2 rounded-full border border-white/60 bg-black/30 px-3 py-2 text-2xl text-white transition hover:bg-black/60 sm:flex"
+              aria-label="Previous image"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={showNextImage}
+              className="absolute right-4 top-1/2 hidden -translate-y-1/2 rounded-full border border-white/60 bg-black/30 px-3 py-2 text-2xl text-white transition hover:bg-black/60 sm:flex"
+              aria-label="Next image"
+            >
+              ›
+            </button>
+            <div
+              className="flex items-center justify-center rounded-[28px] bg-transparent p-2"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
+            >
               <img
-                src={`/Work Samples/${activeImage}`}
-                alt={`Work sample ${activeImage}`}
+                src={`/Work Samples/${workSamples[activeSampleIndex]}`}
+                alt={`Work sample ${workSamples[activeSampleIndex]}`}
                 className="max-h-[75vh] w-full rounded-[32px] object-cover"
               />
             </div>
