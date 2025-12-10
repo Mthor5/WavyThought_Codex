@@ -258,6 +258,7 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
   const touchStartXRef = useRef(null)
   const touchStartYRef = useRef(null)
   const isTouchSwipingRef = useRef(false)
+  const preventClickAfterSwipeRef = useRef(false)
 
   const handleTouchStart = (event) => {
     const touch = event.touches[0]
@@ -289,7 +290,23 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
     touchStartYRef.current = null
     isTouchSwipingRef.current = false
     if (Math.abs(deltaX) < 40 || deltaY > 80) return
+    preventClickAfterSwipeRef.current = true
+    setTimeout(() => {
+      preventClickAfterSwipeRef.current = false
+    }, 0)
     if (deltaX > 0) {
+      showPrevImage()
+    } else {
+      showNextImage()
+    }
+  }
+
+  const handleModalImageClick = (event) => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 640) return
+    if (preventClickAfterSwipeRef.current) return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const clickX = event.clientX - bounds.left
+    if (clickX <= bounds.width / 2) {
       showPrevImage()
     } else {
       showNextImage()
@@ -501,6 +518,7 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onTouchCancel={handleTouchEnd}
+              onClick={handleModalImageClick}
             >
               <img
                 src={`/Work Samples/${workSamples[activeSampleIndex]}`}
