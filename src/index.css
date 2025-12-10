@@ -99,3 +99,18 @@ body.lights-off::-webkit-scrollbar-thumb,
 body.lights-off .glass-scroll::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.55);
 }
+
+.banner-marquee {
+  animation: banner-scroll 18s linear infinite;
+  display: inline-block;
+  padding: 1.5rem 0;
+}
+
+@keyframes banner-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

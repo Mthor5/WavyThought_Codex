@@ -122,9 +122,9 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
             <>
               <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center sm:hidden">
                 <div className="relative h-[260px] w-[420px] max-w-none -translate-y-12 scale-x-[0.92] scale-y-[0.65]">
-                  <div className="absolute inset-x-[-18%] top-6 mx-auto h-[190px] rotate-[-6deg] rounded-[999px] bg-[radial-gradient(circle_at_26%_35%,rgba(255,205,70,0.95),rgba(255,135,20,0.7),rgba(255,205,70,0))] blur-[65px]" />
-                  <div className="absolute inset-x-[-6%] top-26 mx-auto h-[185px] rotate-[4deg] rounded-[999px] bg-[radial-gradient(circle_at_52%_72%,rgba(255,115,35,0.9),rgba(255,85,20,0.7),rgba(255,115,35,0))] blur-[60px]" />
-                  <div className="absolute inset-x-[8%] top-30 mx-auto h-[185px] rotate-[16deg] rounded-[999px] bg-[radial-gradient(circle_at_80%_32%,rgba(255,100,210,0.95),rgba(255,60,160,0.75),rgba(255,100,210,0))] blur-[70px]" />
+                  <div className="absolute inset-x-[-18%] top-6 mx-auto h-[190px] rotate-[-6deg] rounded-[999px] bg-[radial-gradient(circle_at_26%_35%,rgba(255,205,70,0.76),rgba(255,135,20,0.56),rgba(255,205,70,0))] blur-[65px]" />
+                  <div className="absolute inset-x-[-6%] top-26 mx-auto h-[185px] rotate-[4deg] rounded-[999px] bg-[radial-gradient(circle_at_52%_72%,rgba(255,115,35,0.72),rgba(255,85,20,0.56),rgba(255,115,35,0))] blur-[60px]" />
+                  <div className="absolute inset-x-[8%] top-30 mx-auto h-[185px] rotate-[16deg] rounded-[999px] bg-[radial-gradient(circle_at_80%_32%,rgba(255,100,210,0.76),rgba(255,60,160,0.6),rgba(255,100,210,0))] blur-[70px]" />
                 </div>
               </div>
               <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center max-sm:hidden">
@@ -151,8 +151,8 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
               isDark ? 'text-white' : 'text-[#1b1a1e]'
             } ${
               reduceEffects
-                ? 'border-white/60 bg-white/80 shadow-none'
-                : 'border-white/70 bg-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md'
+                ? 'border-white/50 bg-white/40 shadow-none backdrop-blur-xl'
+                : 'border-white/60 bg-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.14)] backdrop-blur-2xl'
             }`}
           >
             WavyThought Creative Studio

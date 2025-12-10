@@ -9,6 +9,7 @@ const App = () => {
   const [lightsOff, setLightsOff] = useState(false)
   const [showScrollToTop, setShowScrollToTop] = useState(false)
   const [reduceEffects, setReduceEffects] = useState(false)
+  const [showBazaarPoster, setShowBazaarPoster] = useState(false)
 
   useEffect(() => {
     const { body } = document
@@ -28,6 +29,19 @@ const App = () => {
       window.removeEventListener('scroll', handleScroll)
     }
   }, [])
+
+  useEffect(() => {
+    if (!showBazaarPoster) return undefined
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setShowBazaarPoster(false)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showBazaarPoster])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
@@ -143,7 +157,7 @@ const App = () => {
       onTouchEnd={resetPointer}
       onTouchCancel={resetPointer}
     >
-      <div className="fixed right-4 top-4 z-50 hidden justify-end px-6 sm:flex sm:right-6">
+      <div className="fixed right-4 top-24 z-50 hidden justify-end px-6 sm:flex sm:right-6">
         <button
           type="button"
           onClick={toggleLights}
@@ -153,7 +167,7 @@ const App = () => {
           {lightsOff ? 'Lights On' : 'Lights Off'}
         </button>
       </div>
-      <div className="fixed right-0 top-4 z-50 flex items-center justify-end sm:hidden">
+      <div className="fixed right-0 top-24 z-50 flex items-center justify-end sm:hidden">
         <button
           type="button"
           aria-label={`Toggle lights (${lightsOff ? 'turn on' : 'turn off'})`}
@@ -165,6 +179,23 @@ const App = () => {
           {lightsOff ? 'Lights On' : 'Lights Off'}
         </button>
       </div>
+      <button
+        type="button"
+        className={`fixed left-0 right-0 top-0 z-[60] w-full overflow-hidden border-b text-xs uppercase tracking-[0.3em] ${
+          lightsOff
+            ? 'border-white/25 bg-[#16131c]/80 text-white backdrop-blur-lg shadow-[0_10px_40px_rgba(0,0,0,0.45)]'
+            : 'border-[#1f1b1f]/20 bg-white/35 text-[#1f1b1f] backdrop-blur-2xl shadow-[0_12px_40px_rgba(12,10,18,0.12)]'
+        }`}
+        role="region"
+        aria-label="Holiday event announcement"
+        onClick={() => setShowBazaarPoster(true)}
+        aria-pressed={showBazaarPoster}
+      >
+        <div className="banner-marquee whitespace-nowrap">
+          OGC &amp; Friends Holiday Bazaar Thursday, December 11th 1PM - 4PM &nbsp; SebCo 3rd floor - Knuckle Hub &nbsp; • &nbsp;
+          OGC &amp; Friends Holiday Bazaar Thursday, December 11th 1PM - 4PM &nbsp; SebCo 3rd floor - Knuckle Hub &nbsp; • &nbsp;
+        </div>
+      </button>
       <Hero pointer={pointer} isDark={lightsOff} reduceEffects={reduceEffects} />
       <Suspense fallback={renderSectionFallback('h-[360px]')}>
         <WorkSamples isDark={lightsOff} reduceEffects={reduceEffects} />
@@ -257,6 +288,36 @@ const App = () => {
           </div>
         </div>
       </footer>
+      {showBazaarPoster && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 px-4 backdrop-blur"
+          role="dialog"
+          aria-modal="true"
+          aria-label="OGC & Friends Holiday Bazaar poster"
+          onClick={() => setShowBazaarPoster(false)}
+        >
+          <div
+            className="relative w-full max-w-4xl overflow-hidden rounded-[48px] border border-white/30 bg-white/10 backdrop-blur-2xl p-5 shadow-[0_40px_160px_rgba(0,0,0,0.6)] sm:max-w-5xl lg:max-w-6xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowBazaarPoster(false)}
+              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/35 text-xl font-light text-white transition hover:bg-black/60"
+              aria-label="Close poster"
+            >
+              ×
+            </button>
+            <div className="rounded-[36px] border border-white/50 bg-gradient-to-b from-white/60 via-white/40 to-white/25 p-3 shadow-[0_25px_80px_rgba(0,0,0,0.25)]">
+              <img
+                src="/HolidayBazaar_SaveTheDate_Updated.jpeg"
+                alt="OGC & Friends Holiday Bazaar save the date"
+                className="h-full w-full rounded-[28px] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
       <button
         type="button"
         onClick={scrollToTop}
