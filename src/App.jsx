@@ -172,8 +172,68 @@ const App = () => {
       <Suspense fallback={renderSectionFallback('h-[520px]')}>
         <ContactForm isDark={lightsOff} reduceEffects={reduceEffects} />
       </Suspense>
+      <div
+        className={`hidden flex-col items-center gap-4 px-6 text-base sm:mt-12 sm:flex ${
+          lightsOff ? 'text-white' : 'text-[#c6a7d9]'
+        }`}
+      >
+        <div className="flex items-center justify-center gap-8">
+          <a
+            href="https://www.instagram.com/wavythought/"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center transition hover:text-[#ff7bd5]"
+            aria-label="Open Instagram"
+          >
+            <svg className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <rect x="2.5" y="2.5" width="19" height="19" rx="6" ry="6" />
+              <circle cx="12" cy="12" r="4.8" />
+              <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+            </svg>
+          </a>
+          <a
+            href="mailto:hello@wavythought.com"
+            className="inline-flex items-center justify-center transition hover:text-[#ff7bd5]"
+            aria-label="Send an email"
+          >
+            <svg className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <rect x="2.8" y="4.2" width="18.4" height="15.6" rx="3" />
+              <path d="M3 5.5l8.2 5.8c0.9 0.65 2.3 0.65 3.2 0L22 5.5" />
+            </svg>
+          </a>
+        </div>
+      </div>
       <footer className={`px-6 pb-16 pt-12 text-xs ${lightsOff ? 'text-white/70' : 'text-[#3c3c3c]'}`}>
         <div className="mx-auto flex max-w-5xl flex-col gap-8 text-center uppercase tracking-[0.35em] sm:flex-row sm:items-start sm:justify-between sm:text-left sm:gap-4">
+          <div
+            className={`flex items-center justify-center gap-5 tracking-normal sm:hidden ${
+              lightsOff ? 'text-white' : 'text-[#c6a7d9]'
+            }`}
+          >
+            <a
+              href="https://www.instagram.com/wavythought/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center transition hover:text-[#ff7bd5]"
+              aria-label="Open Instagram"
+            >
+              <svg className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <rect x="2.5" y="2.5" width="19" height="19" rx="6" ry="6" />
+                <circle cx="12" cy="12" r="4.8" />
+                <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+              </svg>
+            </a>
+            <a
+              href="mailto:hello@wavythought.com"
+              className="inline-flex items-center justify-center transition hover:text-[#ff7bd5]"
+              aria-label="Send an email"
+            >
+              <svg className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <rect x="2.8" y="4.2" width="18.4" height="15.6" rx="3" />
+                <path d="M3 5.5l8.2 5.8c0.9 0.65 2.3 0.65 3.2 0L22 5.5" />
+              </svg>
+            </a>
+          </div>
           <p className="sm:mt-0">&copy; 2025 WAVYTHOUGHT LLC. ALL RIGHTS RESERVED.</p>
           <div className={`text-center ${lightsOff ? 'text-white' : 'text-[#1f1b1f]'} sm:text-right`}>
             <p>Stop by and give us a wave</p>

@@ -118,9 +118,16 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
 
   return (
     <section className={`relative overflow-visible px-4 pb-10 pt-20 ${baseText} sm:pb-10 sm:pt-16`}>
-      {!reduceEffects && (
-        <>
-          <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
+          {!reduceEffects && (
+            <>
+              <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center sm:hidden">
+                <div className="relative h-[260px] w-[420px] max-w-none -translate-y-12 scale-x-[0.92] scale-y-[0.65]">
+                  <div className="absolute inset-x-[-18%] top-6 mx-auto h-[190px] rotate-[-6deg] rounded-[999px] bg-[radial-gradient(circle_at_26%_35%,rgba(255,205,70,0.95),rgba(255,135,20,0.7),rgba(255,205,70,0))] blur-[65px]" />
+                  <div className="absolute inset-x-[-6%] top-26 mx-auto h-[185px] rotate-[4deg] rounded-[999px] bg-[radial-gradient(circle_at_52%_72%,rgba(255,115,35,0.9),rgba(255,85,20,0.7),rgba(255,115,35,0))] blur-[60px]" />
+                  <div className="absolute inset-x-[8%] top-30 mx-auto h-[185px] rotate-[16deg] rounded-[999px] bg-[radial-gradient(circle_at_80%_32%,rgba(255,100,210,0.95),rgba(255,60,160,0.75),rgba(255,100,210,0))] blur-[70px]" />
+                </div>
+              </div>
+              <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center max-sm:hidden">
             <div className="relative h-72 w-[760px] max-w-full -translate-y-6">
               <div className="absolute inset-x-0 top-2 mx-auto h-64 rounded-[999px] bg-[radial-gradient(circle_at_15%_30%,rgba(255,205,133,0.7),rgba(255,205,133,0))] blur-[55px]" />
               <div className="absolute inset-x-[-20%] top-6 mx-auto h-60 rotate-[12deg] rounded-[999px] bg-[radial-gradient(circle_at_80%_30%,rgba(255,115,201,0.85),rgba(255,115,201,0))] blur-[85px]" />
@@ -160,6 +167,8 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
         </div>
 
         <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
+          <div className="pointer-events-none absolute left-0 top-[32%] h-20 w-20 rounded-full bg-[radial-gradient(circle_at_40%_40%,rgba(255,200,90,0.85),rgba(255,200,90,0))] blur-[35px] sm:hidden" />
+          <div className="pointer-events-none absolute left-10 top-[33%] h-16 w-16 rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,120,210,0.9),rgba(255,120,210,0))] blur-[28px] sm:hidden" />
           <div className="flex w-full items-center justify-center lg:w-2/5">
             <div ref={eggAreaRef} className="relative h-[300px] w-[210px] overflow-visible sm:h-[520px] sm:w-[380px]">
               <Suspense

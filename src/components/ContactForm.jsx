@@ -219,16 +219,22 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
         </div>
         <form
           onSubmit={handleSubmit}
-          className={`relative overflow-hidden rounded-[48px] border border-white/70 p-[1.5px] sm:ml-12 sm:mr-4 ${
-            reduceEffects ? 'shadow-none' : 'shadow-[0_45px_120px_rgba(31,27,31,0.25)]'
-          } ${
+        className={`relative overflow-hidden rounded-[48px] border border-white/70 p-[1.5px] sm:ml-12 sm:mr-4 ${
+          reduceEffects
+            ? 'shadow-none'
+            : 'shadow-[0_20px_60px_rgba(31,27,31,0.25)] sm:shadow-[0_45px_120px_rgba(31,27,31,0.25)]'
+        } ${
             isDark ? 'bg-gradient-to-br from-[#292734] via-[#28243a] to-[#1b1a20]' : 'bg-gradient-to-br from-[#ffe48f] via-[#ffb4f3] to-[#c179ff]'
           }`}
         >
           <div
-            className={`m-3 rounded-[36px] p-8 sm:m-4 sm:p-12 ${
-              isDark ? 'bg-white/5' : 'bg-gradient-to-b from-white/75 via-white/65 to-white/45'
-            } ${reduceEffects ? '' : 'backdrop-blur-[2px] shadow-[0_10px_45px_rgba(0,0,0,0.15)]'}`}
+          className={`m-3 rounded-[36px] p-8 sm:m-4 sm:p-12 ${
+            isDark ? 'bg-white/5' : 'bg-gradient-to-b from-white/75 via-white/65 to-white/45'
+          } ${
+            reduceEffects
+              ? ''
+              : 'backdrop-blur-[2px] shadow-[0_6px_28px_rgba(0,0,0,0.15)] sm:shadow-[0_10px_45px_rgba(0,0,0,0.15)]'
+          }`}
           >
             <div className="flex flex-col gap-6">
               {[
@@ -303,20 +309,35 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
         </form>
       </div>
       <div className="relative mx-auto mt-10 max-w-[44rem] px-3 sm:px-8">
-        <div
-          className={`rounded-[48px] border border-white/70 p-[1.5px] sm:ml-12 sm:mr-4 ${
-            reduceEffects ? 'shadow-none' : 'shadow-[0_45px_120px_rgba(31,27,31,0.25)]'
-          } ${
-            isDark
-              ? 'bg-gradient-to-br from-[#292734] via-[#28243a] to-[#1b1a20]'
-              : 'bg-gradient-to-br from-[#ffe48f] via-[#ffb4f3] to-[#c179ff]'
-          }`}
-        >
-          <form
-            onSubmit={handleSubscribeSubmit}
-            className={`m-3 flex flex-col gap-4 rounded-[36px] px-6 py-6 text-center ${
-              isDark ? 'bg-white/5 text-white' : 'bg-gradient-to-b from-white/80 via-white/70 to-white/55'
-            } ${reduceEffects ? '' : 'backdrop-blur-[2px] shadow-[0_15px_45px_rgba(0,0,0,0.15)]'}`}
+        <div className="relative sm:ml-12 sm:mr-4">
+          <div
+            className={`pointer-events-none absolute inset-0 rounded-[48px] ${
+              reduceEffects ? 'hidden' : 'shadow-[0_20px_60px_rgba(31,27,31,0.25)] sm:shadow-[0_45px_120px_rgba(31,27,31,0.25)]'
+            } z-0`}
+            aria-hidden
+          />
+          <img
+            src="/Single smile.png"
+            alt=""
+            role="presentation"
+            className="pointer-events-none absolute left-4 -bottom-[121px] h-36 w-36 -translate-x-4 rotate-[-12deg] opacity-85 sm:hidden z-10"
+          />
+          <div
+            className={`relative z-20 rounded-[48px] border border-white/70 p-[1.5px] ${
+              isDark
+                ? 'bg-gradient-to-br from-[#292734] via-[#28243a] to-[#1b1a20]'
+                : 'bg-gradient-to-br from-[#ffe48f] via-[#ffb4f3] to-[#c179ff]'
+            }`}
+          >
+            <form
+              onSubmit={handleSubscribeSubmit}
+              className={`m-3 flex flex-col gap-4 rounded-[36px] px-6 py-6 text-center ${
+                isDark ? 'bg-white/5 text-white' : 'bg-gradient-to-b from-white/80 via-white/70 to-white/55'
+              } ${
+              reduceEffects
+                ? ''
+                : 'backdrop-blur-[2px] shadow-[0_8px_30px_rgba(0,0,0,0.15)] sm:shadow-[0_15px_45px_rgba(0,0,0,0.15)]'
+            }`}
           >
             <p className="text-sm font-semibold uppercase tracking-[0.25em]">
               Sign up for email list
@@ -355,8 +376,9 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
               }`}
             >
               {subscribeFeedback}
-            </p>
-          )}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </section>
