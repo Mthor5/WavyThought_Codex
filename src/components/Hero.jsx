@@ -135,7 +135,7 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-12">
         <div className="relative z-10 flex min-h-[220px] flex-col items-center gap-4 text-center sm:min-h-[260px] sm:gap-6">
           <img
-            src="/Wavythought Logo main-01.png"
+            src={isDark ? '/Wavythought Logo main invert-01.png' : '/Wavythought Logo main-01.png'}
             alt="WavyThought primary wordmark"
             className="w-full max-w-[820px]"
           />

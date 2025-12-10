@@ -8,6 +8,7 @@ const initialFormValues = {
 
 const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit'
 const DEFAULT_WEB3FORMS_ACCESS_KEY = 'c33f1cf1-691e-462d-b2f8-0d0c9cd51de2'
+const NEWSLETTER_WEB3FORMS_ACCESS_KEY = 'eef31bbf-67da-4210-adcd-5d2be7f62622'
 
 const ContactForm = ({ isDark = false, reduceEffects = false }) => {
   const [formValues, setFormValues] = useState(initialFormValues)
@@ -60,8 +61,8 @@ const ContactForm = ({ isDark = false, reduceEffects = false }) => {
 
   const submitInquiryViaWeb3Forms = async () => {
     const payload = new FormData()
-    payload.append('access_key', accessKey)
-    payload.append('apikey', accessKey)
+    payload.append('access_key', NEWSLETTER_WEB3FORMS_ACCESS_KEY)
+    payload.append('apikey', NEWSLETTER_WEB3FORMS_ACCESS_KEY)
     payload.append('from_name', 'WavyThought Website')
     payload.append('subject', `New inquiry from ${formValues.name}`)
     payload.append('reply_to', formValues.email)
