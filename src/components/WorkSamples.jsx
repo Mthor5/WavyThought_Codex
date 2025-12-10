@@ -222,12 +222,26 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
 
   const touchStartXRef = useRef(null)
   const touchStartYRef = useRef(null)
+  const isTouchSwipingRef = useRef(false)
 
   const handleTouchStart = (event) => {
     const touch = event.touches[0]
     if (!touch) return
     touchStartXRef.current = touch.clientX
     touchStartYRef.current = touch.clientY
+    isTouchSwipingRef.current = false
+  }
+
+  const handleTouchMove = (event) => {
+    if (touchStartXRef.current === null) return
+    const touch = event.touches[0]
+    if (!touch) return
+    const deltaX = Math.abs(touch.clientX - touchStartXRef.current)
+    const deltaY = Math.abs((touchStartYRef.current || 0) - touch.clientY)
+    if (deltaX > 10 && deltaX > deltaY) {
+      isTouchSwipingRef.current = true
+      event.preventDefault()
+    }
   }
 
   const handleTouchEnd = (event) => {
@@ -238,6 +252,7 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
     const deltaY = Math.abs(touch.clientY - (touchStartYRef.current || 0))
     touchStartXRef.current = null
     touchStartYRef.current = null
+    isTouchSwipingRef.current = false
     if (Math.abs(deltaX) < 40 || deltaY > 80) return
     if (deltaX > 0) {
       showPrevImage()
@@ -422,7 +437,11 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
             <button
               type="button"
               onClick={showPrevImage}
-              className="absolute left-4 top-1/2 hidden -translate-y-1/2 rounded-full border border-white/60 bg-black/30 px-3 py-2 text-2xl text-white transition hover:bg-black/60 sm:flex"
+              className={`absolute left-0 top-1/2 hidden -translate-x-[calc(100%+0.75rem)] -translate-y-1/2 rounded-full border px-3 py-2 text-2xl transition sm:flex ${
+                reduceEffects
+                  ? 'border-white/50 bg-white/70 text-[#1f1b1f]'
+                  : 'border-white/40 bg-black/30 text-white shadow-[0_6px_25px_rgba(0,0,0,0.35)] hover:bg-black/45'
+              }`}
               aria-label="Previous image"
             >
               ‹
@@ -430,7 +449,11 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
             <button
               type="button"
               onClick={showNextImage}
-              className="absolute right-4 top-1/2 hidden -translate-y-1/2 rounded-full border border-white/60 bg-black/30 px-3 py-2 text-2xl text-white transition hover:bg-black/60 sm:flex"
+              className={`absolute right-0 top-1/2 hidden translate-x-[calc(100%+0.75rem)] -translate-y-1/2 rounded-full border px-3 py-2 text-2xl transition sm:flex ${
+                reduceEffects
+                  ? 'border-white/50 bg-white/70 text-[#1f1b1f]'
+                  : 'border-white/40 bg-black/30 text-white shadow-[0_6px_25px_rgba(0,0,0,0.35)] hover:bg-black/45'
+              }`}
               aria-label="Next image"
             >
               ›
@@ -438,6 +461,7 @@ const WorkSamples = ({ isDark = false, reduceEffects = false }) => {
             <div
               className="flex items-center justify-center rounded-[28px] bg-transparent p-2"
               onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onTouchCancel={handleTouchEnd}
             >
