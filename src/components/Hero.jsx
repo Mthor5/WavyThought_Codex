@@ -194,6 +194,13 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
               >
                 <EggCanvas pointer={pointer} />
               </Suspense>
+              <p
+                className={`mt-3 text-center text-[0.58rem] uppercase tracking-[0.32em] sm:mt-4 ${
+                  isDark ? 'text-white/70' : 'text-[#1b1a1e]/60'
+                }`}
+              >
+                Sample of generative texture
+              </p>
               {showScrubPrompt && (
                 <div
                   className={`pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full border px-3 py-1.5 text-[0.58rem] font-semibold uppercase tracking-[0.25em] sm:hidden ${
