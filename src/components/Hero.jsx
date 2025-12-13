@@ -195,8 +195,8 @@ const Hero = ({ pointer, isDark = false, reduceEffects = false }) => {
                 <EggCanvas pointer={pointer} />
               </Suspense>
               <p
-                className={`mt-3 text-center text-[0.58rem] uppercase tracking-[0.32em] sm:mt-4 ${
-                  isDark ? 'text-white/70' : 'text-[#1b1a1e]/60'
+                className={`mt-3 mb-5 text-center text-[0.58rem] uppercase tracking-[0.32em] sm:mt-4 sm:mb-0 ${
+                  isDark ? 'text-white/60' : 'text-[#1b1a1e]/55'
                 }`}
               >
                 Sample of generative texture
