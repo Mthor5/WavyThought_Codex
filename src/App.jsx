@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import Hero from './components/Hero'
 
 const WorkSamples = lazy(() => import('./components/WorkSamples'))
@@ -14,7 +14,6 @@ const App = () => {
   const [lightsOff, setLightsOff] = useState(() => getSystemPrefersDark())
   const [showScrollToTop, setShowScrollToTop] = useState(false)
   const [reduceEffects, setReduceEffects] = useState(false)
-  const [showBazaarPoster, setShowBazaarPoster] = useState(false)
 
   useEffect(() => {
     const { body } = document
@@ -55,42 +54,6 @@ const App = () => {
       window.removeEventListener('scroll', handleScroll)
     }
   }, [])
-
-  useEffect(() => {
-    if (!showBazaarPoster) return undefined
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setShowBazaarPoster(false)
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [showBazaarPoster])
-
-  useEffect(() => {
-    if (!showBazaarPoster) return undefined
-    if (typeof document === 'undefined') return undefined
-    const { body } = document
-    const currentLocks = Number(body.dataset.modalLocks || '0')
-    if (currentLocks === 0) {
-      body.dataset.prevOverflow = body.style.overflow || ''
-      body.style.overflow = 'hidden'
-    }
-    body.dataset.modalLocks = String(currentLocks + 1)
-    body.classList.add('modal-open')
-    return () => {
-      const locks = Number(body.dataset.modalLocks || '1')
-      const next = Math.max(0, locks - 1)
-      body.dataset.modalLocks = String(next)
-      if (next === 0) {
-        body.style.overflow = body.dataset.prevOverflow || ''
-        delete body.dataset.prevOverflow
-        body.classList.remove('modal-open')
-      }
-    }
-  }, [showBazaarPoster])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
@@ -181,10 +144,22 @@ const App = () => {
   const bannerGlassClass = lightsOff
     ? 'glass-panel-dark text-white'
     : 'glass-panel-light text-[#1f1b1f]'
+  const bannerMessage =
+    'New work and limited drops coming soon. Custom project requests are open via the form below.'
+  const bannerSegments = [0, 1]
+  const bannerTracks = [0, 1]
+
+  const contactSectionRef = useRef(null)
 
   const scrollToTop = () => {
     if (typeof window === 'undefined') return
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const scrollToContact = () => {
+    const target = contactSectionRef.current
+    if (!target) return
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 
   const renderSectionFallback = (heightClass) => (
@@ -233,24 +208,38 @@ const App = () => {
       </div>
       <button
         type="button"
-        className={`site-top-banner fixed left-0 right-0 top-0 z-[60] w-full overflow-hidden text-xs uppercase tracking-[0.3em] ${bannerGlassClass}`}
-        role="region"
-        aria-label="Holiday event announcement"
-        onClick={() => setShowBazaarPoster(true)}
-        aria-pressed={showBazaarPoster}
+        onClick={scrollToContact}
+        className={`site-top-banner fixed left-0 right-0 top-0 z-[60] w-full overflow-hidden text-xs uppercase tracking-[0.3em] transition ${bannerGlassClass}`}
+        aria-live="polite"
       >
-        <div className="banner-marquee whitespace-nowrap">
-          OGC &amp; Friends Holiday Bazaar Thursday, December 11th 1PM - 4PM &nbsp; SebCo 3rd floor - Knuckle Hub &nbsp; • &nbsp;
-          OGC &amp; Friends Holiday Bazaar Thursday, December 11th 1PM - 4PM &nbsp; SebCo 3rd floor - Knuckle Hub &nbsp; • &nbsp;
+        <div className="banner-marquee">
+          {bannerTracks.map((trackIndex) => (
+            <div
+              key={`banner-track-${trackIndex}`}
+              className={`banner-track ${trackIndex === 0 ? 'banner-track--lead' : 'banner-track--shadow'}`}
+              aria-hidden={trackIndex !== 0}
+            >
+              {bannerSegments.map((segmentIndex) => (
+                <span
+                  key={`banner-segment-${trackIndex}-${segmentIndex}`}
+                  aria-hidden={trackIndex !== 0 || segmentIndex !== 0}
+                >
+                  {bannerMessage}
+                </span>
+              ))}
+            </div>
+          ))}
         </div>
       </button>
       <Hero pointer={pointer} isDark={lightsOff} reduceEffects={reduceEffects} />
       <Suspense fallback={renderSectionFallback('h-[360px]')}>
         <WorkSamples isDark={lightsOff} reduceEffects={reduceEffects} />
       </Suspense>
-      <Suspense fallback={renderSectionFallback('h-[520px]')}>
-        <ContactForm isDark={lightsOff} reduceEffects={reduceEffects} />
-      </Suspense>
+      <div ref={contactSectionRef}>
+        <Suspense fallback={renderSectionFallback('h-[520px]')}>
+          <ContactForm isDark={lightsOff} reduceEffects={reduceEffects} />
+        </Suspense>
+      </div>
       <div
         className={`hidden flex-col items-center gap-4 px-6 text-base sm:mt-12 sm:flex ${
           lightsOff ? 'text-white' : 'text-[#c6a7d9]'
@@ -336,36 +325,7 @@ const App = () => {
           </div>
         </div>
       </footer>
-      {showBazaarPoster && (
-        <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 px-4 backdrop-blur"
-          role="dialog"
-          aria-modal="true"
-          aria-label="OGC & Friends Holiday Bazaar poster"
-          onClick={() => setShowBazaarPoster(false)}
-        >
-          <div
-            className="relative w-full max-w-4xl overflow-hidden rounded-[48px] border border-white/30 bg-white/10 backdrop-blur-2xl p-5 shadow-[0_40px_160px_rgba(0,0,0,0.6)] sm:max-w-5xl lg:max-w-6xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setShowBazaarPoster(false)}
-              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/35 text-xl font-light text-white transition hover:bg-black/60"
-              aria-label="Close poster"
-            >
-              ×
-            </button>
-            <div className="rounded-[36px] border border-white/50 bg-gradient-to-b from-white/60 via-white/40 to-white/25 p-3 shadow-[0_25px_80px_rgba(0,0,0,0.25)]">
-              <img
-                src="/HolidayBazaar_SaveTheDate_Updated.jpeg"
-                alt="OGC & Friends Holiday Bazaar save the date"
-                className="h-full w-full rounded-[28px] object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+
       <button
         type="button"
         onClick={scrollToTop}

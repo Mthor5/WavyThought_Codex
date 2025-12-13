@@ -116,18 +116,47 @@ body.lights-off .glass-scroll::-webkit-scrollbar-thumb {
   -webkit-backdrop-filter: blur(18px);
 }
 
+.site-top-banner {
+  height: 60px;
+}
+
 .banner-marquee {
-  animation: banner-scroll 18s linear infinite;
-  display: inline-block;
-  padding: 1.5rem 0;
+  --banner-duration: 48s;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.banner-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  gap: 4rem;
+  white-space: nowrap;
+  animation: banner-scroll var(--banner-duration) linear infinite;
+  will-change: transform;
+}
+
+.banner-track--lead {
+  animation-delay: calc(var(--banner-duration) / -2);
+}
+
+.banner-track span {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 @keyframes banner-scroll {
   from {
-    transform: translateX(0);
+    transform: translateX(100%);
   }
   to {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
   }
 }
 
