@@ -12,6 +12,7 @@ const normalizePath = (path) => {
 
 const pathname = normalizePath(window.location.pathname)
 const isShopRoute = pathname === '/shop'
+document.title = isShopRoute ? 'WavyThought - Shop' : 'WavyThought'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>{isShopRoute ? <Shop /> : <App />}</StrictMode>,
