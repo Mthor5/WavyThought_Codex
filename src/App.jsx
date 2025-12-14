@@ -184,6 +184,14 @@ const App = () => {
       onTouchEnd={resetPointer}
       onTouchCancel={resetPointer}
     >
+      <div className="fixed left-4 top-24 z-50 hidden items-center px-6 sm:flex sm:left-6">
+        <a
+          href="/shop"
+          className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${lightToggleStyles}`}
+        >
+          Shop
+        </a>
+      </div>
       <div className="fixed right-4 top-24 z-50 hidden justify-end px-6 sm:flex sm:right-6">
         <button
           type="button"
@@ -193,6 +201,14 @@ const App = () => {
         >
           {lightsOff ? 'Lights On' : 'Lights Off'}
         </button>
+      </div>
+      <div className="fixed left-3 top-24 z-50 flex items-center sm:hidden">
+        <a
+          href="/shop"
+          className={`rounded-full border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.4em] transition ${lightToggleStyles}`}
+        >
+          Shop
+        </a>
       </div>
       <div className="fixed right-0 top-24 z-50 flex items-center justify-end sm:hidden">
         <button
