@@ -16,6 +16,10 @@ const App = () => {
   const [reduceEffects, setReduceEffects] = useState(false)
 
   useEffect(() => {
+    document.title = 'WavyThought'
+  }, [])
+
+  useEffect(() => {
     const { body } = document
     if (!body) return undefined
     body.classList.toggle('lights-off', lightsOff)

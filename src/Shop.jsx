@@ -58,6 +58,10 @@ const Shop = () => {
   const [showScrollToTop, setShowScrollToTop] = useState(false)
 
   useEffect(() => {
+    document.title = 'WavyThought - Shop'
+  }, [])
+
+  useEffect(() => {
     const { body } = document
     if (!body) return undefined
     body.classList.toggle('lights-off', lightsOff)
