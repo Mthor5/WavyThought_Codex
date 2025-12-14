@@ -312,7 +312,7 @@ const Shop = () => {
           Cart
           {hasCartItems && (
             <span
-              className={`absolute left-0 top-0 z-30 inline-flex h-5 min-w-[26px] items-center justify-center rounded-full border px-2 text-[11px] font-semibold leading-none shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md ${cartBadgeStyles}`}
+              className={`absolute left-0 top-0 z-30 inline-flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-semibold leading-none shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md ${cartBadgeStyles}`}
               style={{ transform: 'translate(54px, -15px)' }}
             >
               {cartCount}
@@ -340,7 +340,7 @@ const Shop = () => {
           Cart
           {hasCartItems && (
             <span
-              className={`absolute left-0 top-0 z-30 inline-flex h-4 min-w-[22px] items-center justify-center rounded-full border px-1.5 text-[10px] font-semibold leading-none shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md ${cartBadgeStyles}`}
+              className={`absolute left-0 top-0 z-30 inline-flex h-5 w-5 items-center justify-center rounded-full border text-[9px] font-semibold leading-none shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md ${cartBadgeStyles}`}
               style={{ transform: 'translate(54px, -15px)' }}
             >
               {cartCount}
