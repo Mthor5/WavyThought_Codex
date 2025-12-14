@@ -55,6 +55,7 @@ const Shop = () => {
   const [lightsOff, setLightsOff] = useState(() => getSystemPrefersDark())
   const [cartItems, setCartItems] = useState({})
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [showScrollToTop, setShowScrollToTop] = useState(false)
 
   useEffect(() => {
     const { body } = document
@@ -99,6 +100,18 @@ const Shop = () => {
     }
   }, [isCartOpen])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const handleScroll = () => {
+      setShowScrollToTop(window.scrollY > 200)
+    }
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
   const bannerCopy =
     'Limited experiments and texture studies. Custom project requests stay open via the main form.'
   const lightToggleStyles = lightsOff
@@ -134,6 +147,13 @@ const Shop = () => {
     : 'border-[#ff2fa7]/60 bg-[linear-gradient(130deg,rgba(255,255,255,0.95),rgba(255,170,223,0.95),rgba(255,125,185,0.9))] text-[#1b1a1e] drop-shadow-[0_8px_30px_rgba(255,105,180,0.45)]'
   const floatingControlsVisibility = isCartOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
   const smileyFaceSrc = lightsOff ? '/Single smile rotated dark.png' : '/Single smile rotated.png'
+  const scrollToTopButtonStyles = lightsOff
+    ? 'border-white/40 bg-white/10 text-white backdrop-blur-lg shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:bg-white/20'
+    : 'border-[#1f1b1f]/15 bg-[#fdfcfc]/40 text-[#1f1b1f] backdrop-blur-lg shadow-[0_12px_40px_rgba(31,27,31,0.2)] hover:bg-[#fdfcfc]/60'
+  const scrollToTopButtonVisibility =
+    showScrollToTop && !isCartOpen
+      ? 'opacity-100 pointer-events-auto translate-y-0'
+      : 'opacity-0 pointer-events-none translate-y-4'
 
   const cartCount = useMemo(
     () => Object.values(cartItems).reduce((total, item) => total + item.quantity, 0),
@@ -145,6 +165,10 @@ const Shop = () => {
   )
   const hasCartItems = cartCount > 0
   const cartBadgeLabel = hasCartItems ? `${cartCount} item${cartCount === 1 ? '' : 's'} in cart` : 'Cart is empty'
+  const scrollToTop = () => {
+    if (typeof window === 'undefined') return
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const addToCart = (concept) => {
     setCartItems((prev) => {
@@ -236,7 +260,7 @@ const Shop = () => {
                     onClick={() => decrementItem(concept.id)}
                     aria-label="Decrease quantity"
                   >
-                    â€“
+                    –
                   </button>
                   <span className="text-base font-semibold">{quantity}</span>
                   <button
@@ -408,9 +432,88 @@ const Shop = () => {
             />
           </div>
         </div>
-        <footer className={`text-center text-xs uppercase tracking-[0.4em] ${footerText}`}>
-          Custom project requests are open â€” use the main contact form.
+        <div
+          className={`hidden flex-col items-center gap-4 px-6 text-base sm:mt-12 sm:flex ${lightsOff ? 'text-white' : 'text-[#c6a7d9]'}`}
+        >
+          <div className="flex items-center justify-center gap-8">
+            <a
+              href="https://www.instagram.com/wavythought/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center transition hover:text-[#ff7bd5]"
+              aria-label="Open Instagram"
+            >
+              <svg className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <rect x="2.5" y="2.5" width="19" height="19" rx="6" ry="6" />
+                <circle cx="12" cy="12" r="4.8" />
+                <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+              </svg>
+            </a>
+            <a
+              href="mailto:hello@wavythought.com"
+              className="inline-flex items-center justify-center transition hover:text-[#ff7bd5]"
+              aria-label="Send an email"
+            >
+              <svg className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <rect x="2.8" y="4.2" width="18.4" height="15.6" rx="3" />
+                <path d="M3 5.5l8.2 5.8c0.9 0.65 2.3 0.65 3.2 0L22 5.5" />
+              </svg>
+            </a>
+          </div>
+        </div>
+        <footer className={`px-6 pb-16 pt-12 text-xs ${lightsOff ? 'text-white/70' : 'text-[#3c3c3c]'}`}>
+          <div className="mx-auto flex max-w-5xl flex-col gap-8 text-center uppercase tracking-[0.35em] sm:flex-row sm:items-start sm:justify-between sm:text-left sm:gap-4">
+            <div
+              className={`flex items-center justify-center gap-5 tracking-normal sm:hidden ${lightsOff ? 'text-white' : 'text-[#c6a7d9]'}`}
+            >
+              <a
+                href="https://www.instagram.com/wavythought/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center transition hover:text-[#ff7bd5]"
+                aria-label="Open Instagram"
+              >
+                <svg className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <rect x="2.5" y="2.5" width="19" height="19" rx="6" ry="6" />
+                  <circle cx="12" cy="12" r="4.8" />
+                  <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+                </svg>
+              </a>
+              <a
+                href="mailto:hello@wavythought.com"
+                className="inline-flex items-center justify-center transition hover:text-[#ff7bd5]"
+                aria-label="Send an email"
+              >
+                <svg className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <rect x="2.8" y="4.2" width="18.4" height="15.6" rx="3" />
+                  <path d="M3 5.5l8.2 5.8c0.9 0.65 2.3 0.65 3.2 0L22 5.5" />
+                </svg>
+              </a>
+            </div>
+            <p className="sm:mt-0">&copy; 2025 WAVYTHOUGHT LLC. ALL RIGHTS RESERVED.</p>
+            <div className={`text-center ${lightsOff ? 'text-white' : 'text-[#1f1b1f]'} sm:text-right`}>
+              <p>Stop by and give us a wave</p>
+              <p className={`mt-2 ${lightsOff ? 'text-white/80' : 'text-[#3c3c3c]'}`}>
+                <a
+                  href="https://www.instagram.com/wavythought/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-dotted underline-offset-4 transition hover:text-[#ff7bd5]"
+                >
+                  Instagram
+                </a>{' '}
+                |{' '}
+                <a
+                  href="mailto:hello@wavythought.com"
+                  className="underline decoration-dotted underline-offset-4 transition hover:text-[#ff7bd5]"
+                >
+                  Hello@wavythought.com
+                </a>
+              </p>
+            </div>
+          </div>
         </footer>
+
       </main>
       {isCartOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center sm:justify-end">
@@ -426,15 +529,15 @@ const Shop = () => {
             aria-modal="true"
             aria-label="Cart"
           >
-        <div className={`h-full w-[300px] border-l p-6 pb-16 shadow-2xl ${cartPanelClass}`}>
-          <button
-            type="button"
-            aria-label="Close cart"
-            className="absolute left-6 top-6 text-xs uppercase tracking-[0.35em] text-[#ff7bd5] transition hover:opacity-80 sm:left-6"
-            onClick={() => setIsCartOpen(false)}
-          >
-            Close
-          </button>
+            <div className={`relative h-full w-[300px] border-l p-6 pb-16 shadow-2xl ${cartPanelClass}`}>
+              <button
+                type="button"
+                aria-label="Close cart"
+                className="absolute right-6 top-6 text-xs uppercase tracking-[0.35em] text-[#ff7bd5] transition hover:opacity-80"
+                onClick={() => setIsCartOpen(false)}
+              >
+                Close
+              </button>
           <div className="mt-10 flex items-center justify-between border-b border-white/10 pb-4">
             <div>
               <p className="text-xs uppercase tracking-[0.4em]">{cartBadgeLabel}</p>
@@ -469,7 +572,7 @@ const Shop = () => {
                                 onClick={() => decrementItem(id)}
                                 aria-label="Decrease quantity"
                               >
-                                âˆ’
+                                -
                               </button>
                               <span className="text-sm uppercase tracking-[0.35em]">{item.quantity}</span>
                               <button
@@ -491,7 +594,7 @@ const Shop = () => {
                                 className="text-xl leading-none text-[#ff7bd5] transition hover:opacity-70"
                                 onClick={() => removeItem(id)}
                               >
-                                Ã—
+                                ×
                               </button>
                             </div>
                           </div>
@@ -500,7 +603,7 @@ const Shop = () => {
                     </div>
                   ))
                 ) : (
-              <p className={`text-center text-sm ${cartEmptyText}`}>No items yet â€” explore the concepts below.</p>
+              <p className={`text-center text-sm ${cartEmptyText}`}>No items yet — explore the concepts below.</p>
             )}
           </div>
               <div className="sticky bottom-6 mt-10 space-y-3 border-t border-white/10 bg-inherit/90 pt-5 backdrop-blur-sm">
@@ -524,6 +627,25 @@ const Shop = () => {
       </aside>
         </div>
       )}
+      <button
+        type="button"
+        onClick={scrollToTop}
+        aria-label="Scroll to top"
+        className={`fixed bottom-6 right-6 z-40 rounded-full border p-3 shadow-lg transition-all duration-200 ${scrollToTopButtonStyles} ${scrollToTopButtonVisibility}`}
+      >
+        <svg
+          className="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 19V5" />
+          <path d="M5 12l7-7 7 7" />
+        </svg>
+      </button>
     </div>
   )
 }
