@@ -146,7 +146,7 @@ const Shop = () => {
     ? 'border-[#ffd5fb]/60 bg-[linear-gradient(130deg,rgba(255,70,190,0.8),rgba(155,85,255,0.65),rgba(255,255,255,0.2))] text-white drop-shadow-[0_8px_30px_rgba(255,105,180,0.45)]'
     : 'border-[#ff2fa7]/60 bg-[linear-gradient(130deg,rgba(255,255,255,0.95),rgba(255,170,223,0.95),rgba(255,125,185,0.9))] text-[#1b1a1e] drop-shadow-[0_8px_30px_rgba(255,105,180,0.45)]'
   const floatingControlsVisibility = isCartOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
-  const smileyFaceSrc = '/Single smile rotated.png'
+  const smileyFaceSrc = '/Single smile.png'
   const scrollToTopButtonStyles = lightsOff
     ? 'border-white/40 bg-white/10 text-white backdrop-blur-lg shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:bg-white/20'
     : 'border-[#1f1b1f]/15 bg-[#fdfcfc]/40 text-[#1f1b1f] backdrop-blur-lg shadow-[0_12px_40px_rgba(31,27,31,0.2)] hover:bg-[#fdfcfc]/60'
