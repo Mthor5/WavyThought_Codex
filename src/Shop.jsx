@@ -524,12 +524,12 @@ const Shop = () => {
             className={`absolute inset-0 ${lightsOff ? 'bg-[#020103]/95' : 'bg-black/75'}`}
           />
           <aside
-            className="relative z-50 flex h-full w-full justify-end px-4 py-6 sm:p-10"
+            className="relative z-50 flex h-full w-full justify-end px-4 py-6 sm:p-10 pointer-events-none"
             role="dialog"
             aria-modal="true"
             aria-label="Cart"
           >
-            <div className={`relative h-full w-[300px] border-l p-6 pb-16 shadow-2xl ${cartPanelClass}`}>
+            <div className={`relative h-full w-[300px] border-l p-6 pb-16 shadow-2xl pointer-events-auto ${cartPanelClass}`}>
               <button
                 type="button"
                 aria-label="Close cart"
