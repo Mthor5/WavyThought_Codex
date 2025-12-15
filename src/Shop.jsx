@@ -725,7 +725,6 @@ const Shop = () => {
           <p className={`mt-3 text-sm ${cardSubtleText}`}>{concept.blurb}</p>
           <div className="mt-4 flex flex-1 flex-col">
           <div className="flex flex-col gap-1">
-            <span className={`text-xs uppercase tracking-[0.4em] ${cardSubtleText}`}>Edition</span>
             <span className="text-lg font-semibold tracking-[0.1em]">
               ${formattedPrice}
             </span>
