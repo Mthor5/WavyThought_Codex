@@ -12,7 +12,7 @@ const conceptCatalog = [
     id: 'concept-01',
     label: 'Concept 01',
     title: '6" WavyThought Sticker',
-    price: 480,
+    price: 6,
     blurb: '6" matte vinyl sticker, perfect for giving your objects some wavy vibes.',
     imageFolder: 'concept-01',
   },
@@ -290,8 +290,6 @@ const Shop = () => {
   const [activeSort, setActiveSort] = useState('relevant')
   const sortMenuRef = useRef(null)
   const shopifyMountRequestRef = useRef(null)
-  const shopifyProductFetchedRef = useRef(false)
-  const [shopifyProductDetails, setShopifyProductDetails] = useState(null)
 
   useEffect(() => {
     document.title = 'WavyThought - Shop'
@@ -380,31 +378,6 @@ const Shop = () => {
         domain,
         storefrontAccessToken,
       })
-      const fetchProductPrice = () => {
-        if (shopifyProductFetchedRef.current) return
-        client.product
-          .fetch(productId)
-          .then((product) => {
-            if (!product) return
-            const variant = product.variants?.[0]
-            const rawPrice = variant?.priceV2?.amount ?? variant?.price ?? product?.priceRange?.minVariantPrice?.amount
-            const currencySource =
-              variant?.priceV2?.currencyCode ??
-              product?.priceRange?.minVariantPrice?.currencyCode ??
-              'USD'
-            if (rawPrice == null) return
-            const parsedPrice = Number(rawPrice)
-            if (Number.isFinite(parsedPrice)) {
-              setShopifyProductDetails({
-                price: parsedPrice,
-                currencyCode: currencySource,
-              })
-              shopifyProductFetchedRef.current = true
-            }
-          })
-          .catch(() => {})
-      }
-
       ShopifyBuy.UI.onReady(client).then((ui) => {
         if (isCancelled) return
         targetNodes.forEach((node) => {
@@ -700,15 +673,10 @@ const Shop = () => {
     const hasModelContent = conceptSlides.some((slide) => slide.type === 'model')
     const isShopifyLinkedConcept = concept.id === 'concept-01'
 
-    const conceptPriceValue =
-      concept.id === 'concept-01' && typeof shopifyProductDetails?.price === 'number'
-        ? shopifyProductDetails.price
-        : concept.price
     const formattedPrice =
-      typeof conceptPriceValue === 'number'
-        ? conceptPriceValue.toLocaleString(undefined, { minimumFractionDigits: 0 })
-        : conceptPriceValue
-    const isShopifyPriceLoading = concept.id === 'concept-01' && !shopifyProductFetchedRef.current
+      typeof concept.price === 'number'
+        ? concept.price.toLocaleString(undefined, { minimumFractionDigits: 0 })
+        : concept.price
 
     return (
       <article key={concept.id} className={`flex h-full flex-col rounded-[32px] p-6 backdrop-blur ${cardShellClass}`}>
@@ -758,13 +726,9 @@ const Shop = () => {
           <div className="mt-4 flex flex-1 flex-col">
           <div className="flex flex-col gap-1">
             <span className={`text-xs uppercase tracking-[0.4em] ${cardSubtleText}`}>Edition</span>
-            {isShopifyPriceLoading ? (
-              <span className="text-lg font-semibold tracking-[0.1em] animate-pulse opacity-70">Fetching...</span>
-            ) : (
-              <span className="text-lg font-semibold tracking-[0.1em]">
-                ${formattedPrice}
-              </span>
-            )}
+            <span className="text-lg font-semibold tracking-[0.1em]">
+              ${formattedPrice}
+            </span>
           </div>
           <div className="mt-auto flex flex-col gap-3 pt-4">
             {isShopifyLinkedConcept ? (
