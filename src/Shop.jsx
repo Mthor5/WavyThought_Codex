@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './index.css'
 
 const getSystemPrefersDark = () => {
@@ -81,6 +81,12 @@ const conceptCatalog = [
   },
 ]
 
+const sortOptions = [
+  { value: 'relevant', label: 'Most Relevant' },
+  { value: 'price-low-high', label: 'Price: Low to High' },
+  { value: 'price-high-low', label: 'Price: High to Low' },
+]
+
 const Shop = () => {
   const [lightsOff, setLightsOff] = useState(() => getSystemPrefersDark())
   const [cartItems, setCartItems] = useState({})
@@ -88,6 +94,9 @@ const Shop = () => {
   const [showScrollToTop, setShowScrollToTop] = useState(false)
   const [activeGalleryConcept, setActiveGalleryConcept] = useState(null)
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0)
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false)
+  const [activeSort, setActiveSort] = useState('relevant')
+  const sortMenuRef = useRef(null)
 
   useEffect(() => {
     document.title = 'WavyThought - Shop'
@@ -137,6 +146,27 @@ const Shop = () => {
   }, [isCartOpen])
 
   useEffect(() => {
+    if (!isSortMenuOpen) return undefined
+    const handlePointerDown = (event) => {
+      if (!sortMenuRef.current) return
+      if (!sortMenuRef.current.contains(event.target)) {
+        setIsSortMenuOpen(false)
+      }
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsSortMenuOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isSortMenuOpen])
+
+  useEffect(() => {
     if (typeof window === 'undefined') return undefined
     const handleScroll = () => {
       setShowScrollToTop(window.scrollY > 200)
@@ -175,7 +205,7 @@ const Shop = () => {
   useEffect(() => {
     if (!activeGalleryConcept) return undefined
     const handleKeyDown = (event) => {
-      const imageCount = activeGalleryConceptx.images?.length || 0
+      const imageCount = activeGalleryConcept.images?.length || 0
       if (event.key === 'Escape') {
         event.preventDefault()
         setActiveGalleryConcept(null)
@@ -214,6 +244,13 @@ const Shop = () => {
   const cardSubtleText = lightsOff ? 'text-white/60' : 'text-[#615167]'
   const footerText = lightsOff ? 'text-white/60' : 'text-[#5b4a63]'
   const cartButtonStyles = lightToggleStyles
+  const sortButtonStyles = lightsOff
+    ? 'border-transparent bg-white/10 text-white hover:bg-white/20'
+    : 'border-transparent bg-white/80 text-[#1f1b1f] shadow-[0_10px_25px_rgba(31,27,31,0.08)] hover:bg-white'
+  const sortPanelClass = lightsOff
+    ? 'bg-[#0f0d16]/95 text-white border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.7)]'
+    : 'bg-white text-[#1f1b1f] border-[#1f1b1f]/10 shadow-[0_20px_60px_rgba(31,27,31,0.15)]'
+  const sortOptionHover = lightsOff ? 'hover:bg-white/10' : 'hover:bg-[#f7f2fb]'
   const cardActionButtonBase = 'w-full rounded-full border px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] transition text-center'
   const cardRemoveButtonStyles = lightsOff
     ? 'border-transparent bg-[linear-gradient(120deg,rgba(255,190,120,0.95),rgba(255,110,175,0.92))] text-white shadow-[0_8px_18px_rgba(255,145,130,0.32)] hover:opacity-90'
@@ -237,6 +274,23 @@ const Shop = () => {
     showScrollToTop && !isCartOpen
       ? 'opacity-100 pointer-events-auto translate-y-0'
       : 'opacity-0 pointer-events-none translate-y-4'
+  const sortPanelVisibility = isSortMenuOpen
+    ? 'pointer-events-auto opacity-100 translate-y-0'
+    : 'pointer-events-none opacity-0 -translate-y-2'
+
+  const sortedConcepts = useMemo(() => {
+    if (activeSort === 'price-low-high') {
+      return [...conceptCatalog].sort((a, b) => a.price - b.price)
+    }
+    if (activeSort === 'price-high-low') {
+      return [...conceptCatalog].sort((a, b) => b.price - a.price)
+    }
+    return conceptCatalog
+  }, [activeSort])
+
+  const currentSortLabel =
+    sortOptions.find((option) => option.value === activeSort)?.label || 'Most Relevant'
+  const sortMenuId = 'sort-menu'
 
   const cartCount = useMemo(
     () => Object.values(cartItems).reduce((total, item) => total + item.quantity, 0),
@@ -303,12 +357,23 @@ const Shop = () => {
     setActiveGalleryIndex(boundedIndex)
   }
 
+  const handleSortSelect = (value) => {
+    setActiveSort(value)
+    setIsSortMenuOpen(false)
+  }
+
   const addToCart = (concept) => {
     setCartItems((prev) => {
       const nextQuantity = (prev[concept.id]?.quantity || 0) + 1
       return {
         ...prev,
-        [concept.id]: { quantity: nextQuantity, title: concept.title, price: concept.price, label: concept.label },
+        [concept.id]: {
+          quantity: nextQuantity,
+          title: concept.title,
+          price: concept.price,
+          label: concept.label,
+          image: concept.images?.[0] || null,
+        },
       }
     })
     setIsCartOpen(true)
@@ -554,9 +619,54 @@ const Shop = () => {
               className="w-full rotate-[-16deg] opacity-90 drop-shadow-[0_25px_60px_rgba(0,0,0,0.35)]"
             />
           </div>
-          <section className="relative z-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {conceptCatalog.map(renderConceptCard)}
-          </section>
+          <div className="relative z-10">
+            <div className="mb-4 flex justify-end">
+              <div className="relative" ref={sortMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsSortMenuOpen((prev) => !prev)}
+                  aria-expanded={isSortMenuOpen}
+                  aria-controls={sortMenuId}
+                  aria-haspopup="true"
+                  className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${sortButtonStyles}`}
+                >
+                  Filter
+                </button>
+                <div
+                  id={sortMenuId}
+                  role="menu"
+                  aria-label="Filter options"
+                  className={`absolute right-0 top-12 w-56 origin-top-right rounded-3xl border p-4 text-left text-[0.7rem] uppercase tracking-[0.3em] transition-transform transition-opacity duration-150 ${sortPanelClass} ${sortPanelVisibility} z-30`}
+                >
+                  <p className={`text-[0.6rem] ${lightsOff ? 'text-white/60' : 'text-[#6f5a82]'}`}>Sort by</p>
+                  <div className="mt-3 flex flex-col gap-1">
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => handleSortSelect(option.value)}
+                        className={`rounded-2xl px-3 py-2 text-left text-[0.65rem] font-semibold tracking-[0.25em] transition ${sortOptionHover} ${
+                          option.value === activeSort
+                            ? lightsOff
+                              ? 'bg-white/15 text-white'
+                              : 'bg-[#f4eef9] text-[#1f1b1f]'
+                            : lightsOff
+                            ? 'text-white/80'
+                            : 'text-[#4b3a53]'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {sortedConcepts.map(renderConceptCard)}
+            </section>
+          </div>
           <div className="pointer-events-none mt-6 flex justify-center sm:hidden -z-10">
             <img
               src={smileyFaceSrc}
@@ -767,12 +877,12 @@ const Shop = () => {
             className={`absolute inset-0 ${lightsOff ? 'bg-[#020103]/95' : 'bg-black/75'}`}
           />
           <aside
-            className="relative z-50 flex h-full w-full justify-end px-4 py-6 sm:p-10 pointer-events-none"
+            className="relative z-50 flex h-full w-full justify-end pointer-events-none"
             role="dialog"
             aria-modal="true"
             aria-label="Cart"
           >
-            <div className={`relative h-full w-[300px] border-l p-6 pb-16 shadow-2xl pointer-events-auto ${cartPanelClass}`}>
+            <div className={`relative h-full w-full max-w-[420px] border-l p-5 pb-16 shadow-2xl pointer-events-auto ${cartPanelClass} sm:max-w-[460px]`}>
               <button
                 type="button"
                 aria-label="Close cart"
@@ -781,9 +891,9 @@ const Shop = () => {
               >
                 Close
               </button>
-          <div className="mt-10 flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="mt-10 flex items-center justify-between gap-6 border-b border-white/10 pb-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.4em]">{cartBadgeLabel}</p>
+              <p className="text-xs uppercase tracking-[0.25em]">{cartBadgeLabel}</p>
               <p className="text-2xl font-semibold">
               ${cartSubtotal.toLocaleString(undefined, { minimumFractionDigits: 0 })}
             </p>
@@ -794,14 +904,25 @@ const Shop = () => {
                   Object.entries(cartItems).map(([id, item]) => (
                     <div key={id} className="rounded-2xl border border-white/15 p-4">
                       <div className="flex items-start gap-3">
-                        <div
-                          className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-[22px] border border-white/15 shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
-                          style={{
-                            backgroundImage: lightsOff
-                              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 120, 210, 0.45), rgba(120, 90, 255, 0.35))'
-                              : 'linear-gradient(135deg, rgba(244, 231, 255, 0.95), rgba(255, 213, 241, 0.9), rgba(140, 89, 255, 0.75))',
-                          }}
-                        />
+                        <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-[12px] border border-white/15 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={`${item.title} preview`}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div
+                              className="h-full w-full"
+                              style={{
+                                backgroundImage: lightsOff
+                                  ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 120, 210, 0.45), rgba(120, 90, 255, 0.35))'
+                                  : 'linear-gradient(135deg, rgba(244, 231, 255, 0.95), rgba(255, 213, 241, 0.9), rgba(140, 89, 255, 0.75))',
+                              }}
+                            />
+                          )}
+                        </div>
                         <div className="flex-1">
                           <div>
                             <p className={`text-[0.55rem] uppercase tracking-[0.35em] ${cardSubtleText}`}>{item.label}</p>
@@ -817,7 +938,7 @@ const Shop = () => {
                               >
                                 -
                               </button>
-                              <span className="text-sm uppercase tracking-[0.35em]">{item.quantity}</span>
+                              <span className="text-sm uppercase tracking-[0.25em]">{item.quantity}</span>
                               <button
                                 type="button"
                                 className="h-8 w-8 rounded-full bg-transparent text-lg leading-none text-current transition hover:opacity-70"
@@ -827,18 +948,10 @@ const Shop = () => {
                                 +
                               </button>
                             </div>
-                            <div className="flex items-center gap-3 text-right">
-                              <span className="text-sm uppercase tracking-[0.35em]">
+                            <div className="text-right">
+                              <span className="text-sm uppercase tracking-[0.25em]">
                                 ${(item.price * item.quantity).toLocaleString(undefined, { minimumFractionDigits: 0 })}
                               </span>
-                              <button
-                                type="button"
-                                aria-label="Remove item"
-                                className="text-xl leading-none text-[#ff7bd5] transition hover:opacity-70"
-                                onClick={() => removeItem(id)}
-                              >
-                                ×
-                              </button>
                             </div>
                           </div>
                         </div>
@@ -846,11 +959,11 @@ const Shop = () => {
                     </div>
                   ))
                 ) : (
-              <p className={`text-center text-sm ${cartEmptyText}`}>No items yet — explore the concepts below.</p>
+              <p className={`text-center text-sm ${cartEmptyText}`}>No items yet - explore the concepts below.</p>
             )}
           </div>
               <div className="sticky bottom-6 mt-10 space-y-3 border-t border-white/10 bg-inherit/90 pt-5 backdrop-blur-sm">
-            <div className="flex items-center justify-between text-sm uppercase tracking-[0.35em]">
+            <div className="flex items-center justify-between text-sm uppercase tracking-[0.25em]">
               <span>Subtotal</span>
               <span>${cartSubtotal.toLocaleString(undefined, { minimumFractionDigits: 0 })}</span>
             </div>
