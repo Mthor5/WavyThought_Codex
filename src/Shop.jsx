@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './index.css'
+import ModelViewerSlide from './components/ModelViewerSlide'
 
 const getSystemPrefersDark = () => {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return true
@@ -10,14 +11,10 @@ const conceptCatalog = [
   {
     id: 'concept-01',
     label: 'Concept 01',
-    title: 'Generative Texture Study',
+    title: '6" WavyThought Sticker',
     price: 480,
-    blurb: 'Material and lighting explorations currently in fabrication. Email us if one speaks to you.',
-    images: [
-      '/Work Samples/disk 1.JPEG',
-      '/Work Samples/disk 2.JPEG',
-      '/Work Samples/disk 3.JPEG',
-    ],
+    blurb: '6" matte vinyl sticker, perfect for giving your objects some wavy vibes.',
+    imageFolder: 'concept-01',
   },
   {
     id: 'concept-02',
@@ -25,11 +22,7 @@ const conceptCatalog = [
     title: 'Layered Wave Grid',
     price: 520,
     blurb: 'Stacked acrylic gradients shaped by generative wave equations.',
-    images: [
-      '/Work Samples/blazers 00.JPEG',
-      '/Work Samples/blazers 01.JPEG',
-      '/Work Samples/blazers 02.JPEG',
-    ],
+    imageFolder: 'concept-02',
   },
   {
     id: 'concept-03',
@@ -37,11 +30,7 @@ const conceptCatalog = [
     title: 'Chromatic Bloom Lamp',
     price: 640,
     blurb: 'Blooming light sculpture with programmable gradients.',
-    images: [
-      '/Work Samples/mountain 01.JPEG',
-      '/Work Samples/mountain 03.JPEG',
-      '/Work Samples/lamp 01.JPEG',
-    ],
+    imageFolder: 'concept-03',
   },
   {
     id: 'concept-04',
@@ -49,11 +38,7 @@ const conceptCatalog = [
     title: 'Tactile Foam Relief',
     price: 390,
     blurb: 'Hand-finished relief capturing simulated foam turbulence.',
-    images: [
-      '/Work Samples/card holder.JPEG',
-      '/Work Samples/facet tray.JPEG',
-      '/Work Samples/airtag keychain.JPEG',
-    ],
+    imageFolder: 'concept-04',
   },
   {
     id: 'concept-05',
@@ -61,11 +46,7 @@ const conceptCatalog = [
     title: 'Mirror Wave Cabinet',
     price: 1200,
     blurb: 'Furniture study bending reflective planes through CNC carving.',
-    images: [
-      '/Work Samples/Plank 04.JPEG',
-      '/Work Samples/Plank 05.JPEG',
-      '/Work Samples/plank 01.JPEG',
-    ],
+    imageFolder: 'concept-05',
   },
   {
     id: 'concept-06',
@@ -73,13 +54,226 @@ const conceptCatalog = [
     title: 'Sound Reactive Wall',
     price: 950,
     blurb: 'LED tessellation that responds to real-time ambient sound.',
-    images: [
-      '/Work Samples/shoe 01.JPEG',
-      '/Work Samples/shoe 02.JPEG',
-      '/Work Samples/shoe 03.JPEG',
-    ],
+    imageFolder: 'concept-06',
   },
 ]
+
+const productAssetModules = import.meta.glob('./assets/products/*/*', {
+  eager: true,
+  import: 'default',
+})
+
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif']
+const MODEL_EXTENSIONS = ['.usdz', '.glb', '.gltf']
+
+const conceptAssetsByFolder = Object.entries(productAssetModules).reduce((acc, [path, url]) => {
+  const match = path.match(/products\/([^/]+)\//)
+  if (!match) return acc
+  const conceptFolder = match[1]
+  if (!acc[conceptFolder]) {
+    acc[conceptFolder] = { images: [], models: [] }
+  }
+  const extensionMatch = path.match(/\.[^.]+$/)
+  const extension = extensionMatch ? extensionMatch[0].toLowerCase() : ''
+  if (IMAGE_EXTENSIONS.includes(extension)) {
+    acc[conceptFolder].images.push({ path, url })
+  } else if (MODEL_EXTENSIONS.includes(extension)) {
+    acc[conceptFolder].models.push({ path, url })
+  }
+  return acc
+}, {})
+
+Object.keys(conceptAssetsByFolder).forEach((folderKey) => {
+  const bucket = conceptAssetsByFolder[folderKey]
+  bucket.images = bucket.images.sort((a, b) => a.path.localeCompare(b.path)).map((entry) => entry.url)
+  bucket.models = bucket.models.sort((a, b) => a.path.localeCompare(b.path)).map((entry) => entry.url)
+})
+
+const getConceptAssets = (concept) => {
+  if (!concept) return { images: [], models: [] }
+  const folder = concept.imageFolder
+  if (folder && conceptAssetsByFolder[folder]) {
+    return conceptAssetsByFolder[folder]
+  }
+  const fallbackImages = Array.isArray(concept.images) ? concept.images : []
+  return { images: fallbackImages, models: [] }
+}
+
+const getConceptImages = (concept) => getConceptAssets(concept).images
+const getConceptModels = (concept) => getConceptAssets(concept).models
+const getConceptSlides = (concept) => {
+  if (!concept) return []
+  const images = getConceptImages(concept)
+  const models = getConceptModels(concept)
+  const slides = []
+  images.forEach((src, index) => {
+    slides.push({
+      type: 'image',
+      src,
+      key: `image-${index}`,
+    })
+  })
+  models.forEach((src, index) => {
+    const extension = src.split('?')[0].split('.').pop()?.toLowerCase() || ''
+    slides.push({
+      type: 'model',
+      src,
+      key: `model-${index}`,
+      format: extension,
+    })
+  })
+  return slides
+}
+
+const SHOPIFY_BUY_BUTTON_CONFIG = {
+  scriptUrl: 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js',
+  productId: '7944646787151',
+  domain: 'wu3vyk-k9.myshopify.com',
+  storefrontAccessToken: '6ca44531eca180e9b4594f70cc526427',
+  moneyFormat: '%24%7B%7Bamount%7D%7D',
+  hostIds: {
+    card: 'product-component-1765833870392',
+    modal: 'product-component-1765833870392-modal',
+  },
+}
+
+const createShopifyProductOptions = (isDarkMode) => {
+  const buttonTextColor = isDarkMode ? '#ffffff' : '#1f1b1f'
+  const subtleTextColor = isDarkMode ? 'rgba(255,255,255,0.7)' : '#4b3a53'
+  const gradientBackground =
+    'linear-gradient(120deg, rgba(255,190,120,0.95), rgba(255,110,175,0.92))'
+  const sharedButtonStyles = {
+    'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+    'font-size': '13px',
+    'text-transform': 'uppercase',
+    'letter-spacing': '0.35em',
+    'border-radius': '999px',
+    'padding-top': '14px',
+    'padding-bottom': '14px',
+    'padding-left': '34px',
+    'padding-right': '34px',
+    'border': '1px solid transparent',
+    'background-color': 'transparent',
+    'background-image': gradientBackground,
+    'color': buttonTextColor,
+    'box-shadow': 'none',
+    'transition': 'transform 200ms ease, opacity 200ms ease',
+    ':hover': {
+      'transform': 'translateY(-1px)',
+      'opacity': '0.9',
+    },
+    ':focus': {
+      'outline': 'none',
+      'box-shadow': isDarkMode
+        ? '0 0 0 2px rgba(255, 190, 120, 0.45)'
+        : '0 0 0 2px rgba(31, 27, 31, 0.35)',
+    },
+  }
+  const sharedQuantityStyles = {
+    'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+    'font-size': '13px',
+    'letter-spacing': '0.15em',
+    'text-transform': 'uppercase',
+    'border-radius': '999px',
+    'padding-top': '12px',
+    'padding-bottom': '12px',
+    'padding-left': '18px',
+    'padding-right': '18px',
+    'border': `1px solid ${isDarkMode ? 'rgba(255,255,255,0.25)' : 'rgba(31,27,31,0.15)'}`,
+    'color': buttonTextColor,
+    'background-color': isDarkMode ? 'rgba(8,6,16,0.75)' : 'rgba(255,255,255,0.9)',
+  }
+
+  const productShellStyles = {
+    'background-color': 'transparent',
+    'text-align': 'center',
+    'color': subtleTextColor,
+  }
+
+  return {
+    product: {
+      styles: {
+        product: productShellStyles,
+        button: sharedButtonStyles,
+        quantityInput: sharedQuantityStyles,
+      },
+      contents: {
+        img: false,
+        title: false,
+        price: false,
+      },
+      text: {
+        button: 'Add to Cart',
+      },
+    },
+    modalProduct: {
+      contents: {
+        img: false,
+        imgWithCarousel: true,
+        button: false,
+        buttonWithQuantity: true,
+      },
+      styles: {
+        product: {
+          'background-color': isDarkMode ? 'rgba(5,4,10,0.6)' : 'rgba(255,255,255,0.8)',
+          'border': isDarkMode ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(31,27,31,0.15)',
+          'border-radius': '32px',
+          'padding': '12px',
+        },
+        button: sharedButtonStyles,
+        quantityInput: sharedQuantityStyles,
+      },
+      text: {
+        button: 'Add to Cart',
+      },
+    },
+    cart: {
+      styles: {
+        cart: {
+          'background-color': isDarkMode ? 'rgba(6,5,14,0.94)' : '#ffffff',
+          'border': isDarkMode ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(31,27,31,0.12)',
+          'border-radius': '28px',
+          'box-shadow': isDarkMode
+            ? '0 35px 70px rgba(0,0,0,0.55)'
+            : '0 35px 70px rgba(31,27,31,0.18)',
+        },
+        footer: {
+          'background-color': 'transparent',
+        },
+        title: {
+          'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+          'letter-spacing': '0.25em',
+          'text-transform': 'uppercase',
+          'color': buttonTextColor,
+        },
+        lineItems: {
+          'color': subtleTextColor,
+        },
+        button: sharedButtonStyles,
+      },
+      text: {
+        total: 'Subtotal',
+        button: 'Checkout',
+      },
+    },
+    toggle: {
+      styles: {
+        toggle: {
+          'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+          'background-image': gradientBackground,
+          'border': '1px solid transparent',
+          'color': buttonTextColor,
+          'text-transform': 'uppercase',
+          'letter-spacing': '0.3em',
+        },
+        count: {
+          'font-size': '13px',
+          'color': buttonTextColor,
+        },
+      },
+    },
+  }
+}
 
 const sortOptions = [
   { value: 'relevant', label: 'Most Relevant' },
@@ -89,18 +283,19 @@ const sortOptions = [
 
 const Shop = () => {
   const [lightsOff, setLightsOff] = useState(() => getSystemPrefersDark())
-  const [cartItems, setCartItems] = useState({})
-  const [isCartOpen, setIsCartOpen] = useState(false)
   const [showScrollToTop, setShowScrollToTop] = useState(false)
   const [activeGalleryConcept, setActiveGalleryConcept] = useState(null)
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0)
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false)
   const [activeSort, setActiveSort] = useState('relevant')
   const sortMenuRef = useRef(null)
+  const shopifyMountRequestRef = useRef(null)
+  const shopifyProductFetchedRef = useRef(false)
+  const [shopifyProductDetails, setShopifyProductDetails] = useState(null)
 
   useEffect(() => {
     document.title = 'WavyThought - Shop'
-  }, [])
+  }, [lightsOff])
 
   useEffect(() => {
     const { body } = document
@@ -133,19 +328,6 @@ const Shop = () => {
   }, [])
 
   useEffect(() => {
-    if (!isCartOpen) return undefined
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setIsCartOpen(false)
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isCartOpen])
-
-  useEffect(() => {
     if (!isSortMenuOpen) return undefined
     const handlePointerDown = (event) => {
       if (!sortMenuRef.current) return
@@ -165,6 +347,119 @@ const Shop = () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [isSortMenuOpen])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return undefined
+    let isCancelled = false
+    let detachScriptListener = null
+    const scriptId = 'wavythought-shopify-buy-sdk'
+    const { hostIds = {}, scriptUrl, domain, storefrontAccessToken, productId, moneyFormat } =
+      SHOPIFY_BUY_BUTTON_CONFIG
+    const hostIdList = Object.values(hostIds).filter(Boolean)
+    const shopifyOptions = createShopifyProductOptions(lightsOff)
+
+    const unmountShopifyButtons = () => {
+      hostIdList.forEach((hostId) => {
+        const node = document.getElementById(hostId)
+        if (node) {
+          delete node.dataset.shopifyMounted
+          node.innerHTML = ''
+        }
+      })
+    }
+
+    const initializeShopifyButtons = () => {
+      if (isCancelled) return
+      const ShopifyBuy = window.ShopifyBuy
+      if (!ShopifyBuy || !ShopifyBuy.UI) return
+      const targetNodes = hostIdList
+        .map((hostId) => document.getElementById(hostId))
+        .filter((node) => node && node.dataset.shopifyMounted !== 'true')
+      if (targetNodes.length === 0) return
+      const client = ShopifyBuy.buildClient({
+        domain,
+        storefrontAccessToken,
+      })
+      const fetchProductPrice = () => {
+        if (shopifyProductFetchedRef.current) return
+        client.product
+          .fetch(productId)
+          .then((product) => {
+            if (!product) return
+            const variant = product.variants?.[0]
+            const priceSource =
+              variant?.price ??
+              variant?.priceV2?.amount ??
+              product?.priceRange?.minVariantPrice?.amount ??
+              product?.variants?.[0]?.price
+            const currencySource =
+              variant?.priceV2?.currencyCode ??
+              product?.priceRange?.minVariantPrice?.currencyCode ??
+              'USD'
+            const parsedPrice = Number(priceSource)
+            if (Number.isFinite(parsedPrice)) {
+              setShopifyProductDetails({
+                price: parsedPrice,
+                currencyCode: currencySource,
+              })
+              shopifyProductFetchedRef.current = true
+            }
+          })
+          .catch(() => {})
+      }
+
+      fetchProductPrice()
+
+      ShopifyBuy.UI.onReady(client).then((ui) => {
+        if (isCancelled) return
+        targetNodes.forEach((node) => {
+          if (!node || node.dataset.shopifyMounted === 'true') return
+          ui.createComponent('product', {
+            id: productId,
+            node,
+            moneyFormat,
+            options: shopifyOptions,
+          })
+          node.dataset.shopifyMounted = 'true'
+        })
+      })
+    }
+
+    shopifyMountRequestRef.current = initializeShopifyButtons
+
+    const attachScript = () => {
+      let script = document.getElementById(scriptId)
+      const handleScriptLoad = () => {
+        initializeShopifyButtons()
+      }
+      if (!script) {
+        script = document.createElement('script')
+        script.id = scriptId
+        script.async = true
+        script.src = scriptUrl
+        document.head.appendChild(script)
+      }
+      script.addEventListener('load', handleScriptLoad)
+      detachScriptListener = () => {
+        script?.removeEventListener('load', handleScriptLoad)
+      }
+    }
+
+    if (window.ShopifyBuy?.UI) {
+      initializeShopifyButtons()
+    } else {
+      attachScript()
+      initializeShopifyButtons()
+    }
+
+    return () => {
+      isCancelled = true
+      if (typeof detachScriptListener === 'function') {
+        detachScriptListener()
+      }
+      unmountShopifyButtons()
+    }
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
@@ -205,22 +500,28 @@ const Shop = () => {
   useEffect(() => {
     if (!activeGalleryConcept) return undefined
     const handleKeyDown = (event) => {
-      const imageCount = activeGalleryConcept.images?.length || 0
+      const slideCount = getConceptSlides(activeGalleryConcept).length
       if (event.key === 'Escape') {
         event.preventDefault()
         setActiveGalleryConcept(null)
         setActiveGalleryIndex(0)
-      } else if (event.key === 'ArrowRight' && imageCount > 1) {
+      } else if (event.key === 'ArrowRight' && slideCount > 1) {
         event.preventDefault()
-        setActiveGalleryIndex((prev) => (prev + 1) % imageCount)
-      } else if (event.key === 'ArrowLeft' && imageCount > 1) {
+        setActiveGalleryIndex((prev) => (prev + 1) % slideCount)
+      } else if (event.key === 'ArrowLeft' && slideCount > 1) {
         event.preventDefault()
-        setActiveGalleryIndex((prev) => (prev - 1 + imageCount) % imageCount)
+        setActiveGalleryIndex((prev) => (prev - 1 + slideCount) % slideCount)
       }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [activeGalleryConcept])
+
+  useEffect(() => {
+    if (activeGalleryConcept?.id === 'concept-01') {
+      shopifyMountRequestRef.current?.()
     }
   }, [activeGalleryConcept])
 
@@ -243,10 +544,6 @@ const Shop = () => {
     : 'border-[#1f1b1f]/20 bg-white/95 text-[#1f1b1f]/85 shadow-[0_18px_45px_rgba(31,27,31,0.08)]'
   const cardSubtleText = lightsOff ? 'text-white/60' : 'text-[#615167]'
   const footerText = lightsOff ? 'text-white/60' : 'text-[#5b4a63]'
-  const cartButtonStyles = lightToggleStyles
-  const cartCloseButtonStyles = lightsOff
-    ? 'border-white/20 text-white hover:bg-white/10'
-    : 'border-[#1f1b1f]/20 text-[#1f1b1f] hover:bg-[#f4eef9]'
   const sortButtonStyles = lightsOff
     ? 'border-transparent bg-white/10 text-white hover:bg-white/20'
     : 'border-transparent bg-white/80 text-[#1f1b1f] shadow-[0_10px_25px_rgba(31,27,31,0.08)] hover:bg-white'
@@ -254,29 +551,13 @@ const Shop = () => {
     ? 'bg-[#0f0d16]/95 text-white border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.7)]'
     : 'bg-white text-[#1f1b1f] border-[#1f1b1f]/10 shadow-[0_20px_60px_rgba(31,27,31,0.15)]'
   const sortOptionHover = lightsOff ? 'hover:bg-white/10' : 'hover:bg-[#f7f2fb]'
-  const cardActionButtonBase = 'w-full rounded-full border px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] transition text-center'
-  const cardRemoveButtonStyles = lightsOff
-    ? 'border-transparent bg-[linear-gradient(120deg,rgba(255,190,120,0.95),rgba(255,110,175,0.92))] text-white shadow-[0_8px_18px_rgba(255,145,130,0.32)] hover:opacity-90'
-    : 'border-transparent bg-[linear-gradient(120deg,rgba(255,190,120,0.95),rgba(255,110,175,0.92))] text-[#1b1a1e] shadow-[0_8px_18px_rgba(255,145,130,0.32)] hover:opacity-90'
-  const cartPanelClass = lightsOff
-    ? 'border-white/15 bg-white/5 text-white/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]'
-    : 'border-[#1f1b1f]/15 bg-white/95 text-[#1f1b1f]/90 shadow-[0_35px_80px_rgba(31,27,31,0.12)]'
-  const cartDividerClass = lightsOff ? 'border-white/10' : 'border-[#1f1b1f]/10'
-  const cartItemBorderClass = lightsOff ? 'border-white/15' : 'border-[#1f1b1f]/15'
-  const cartFooterShell = lightsOff ? 'border-white/15 bg-white/5' : 'border-[#1f1b1f]/15 bg-white/95'
-  const cartEmptyText = lightsOff ? 'text-white/60' : 'text-[#5a4b64]'
-  const cartBadgeStyles = lightsOff
-    ? 'border-transparent bg-[linear-gradient(120deg,rgba(255,190,120,0.95),rgba(255,110,175,0.92))] text-white shadow-[0_8px_18px_rgba(255,145,130,0.32)]'
-    : 'border-transparent bg-[linear-gradient(120deg,rgba(255,190,120,0.95),rgba(255,110,175,0.92))] text-[#1b1a1e] shadow-[0_8px_18px_rgba(255,145,130,0.32)]'
-  const floatingControlsVisibility = isCartOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
   const smileyFaceSrc = '/Single smile.png'
   const scrollToTopButtonStyles = lightsOff
     ? 'border-white/40 bg-white/10 text-white backdrop-blur-lg shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:bg-white/20'
     : 'border-[#1f1b1f]/15 bg-[#fdfcfc]/40 text-[#1f1b1f] backdrop-blur-lg shadow-[0_12px_40px_rgba(31,27,31,0.2)] hover:bg-[#fdfcfc]/60'
-  const scrollToTopButtonVisibility =
-    showScrollToTop && !isCartOpen
-      ? 'opacity-100 pointer-events-auto translate-y-0'
-      : 'opacity-0 pointer-events-none translate-y-4'
+  const scrollToTopButtonVisibility = showScrollToTop
+    ? 'opacity-100 pointer-events-auto translate-y-0'
+    : 'opacity-0 pointer-events-none translate-y-4'
   const sortPanelVisibility = isSortMenuOpen
     ? 'pointer-events-auto opacity-100 translate-y-0'
     : 'pointer-events-none opacity-0 -translate-y-2'
@@ -295,23 +576,71 @@ const Shop = () => {
     sortOptions.find((option) => option.value === activeSort)?.label || 'Most Relevant'
   const sortMenuId = 'sort-menu'
 
-  const cartCount = useMemo(
-    () => Object.values(cartItems).reduce((total, item) => total + item.quantity, 0),
-    [cartItems],
-  )
-  const cartSubtotal = useMemo(
-    () => Object.values(cartItems).reduce((total, item) => total + item.quantity * item.price, 0),
-    [cartItems],
-  )
-  const hasCartItems = cartCount > 0
-  const cartBadgeLabel = hasCartItems ? `${cartCount} item${cartCount === 1 ? '' : 's'} in cart` : 'Cart is empty'
   const scrollToTop = () => {
     if (typeof window === 'undefined') return
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
   const heroLogoSrc = lightsOff ? '/Wavythought Clear Logo white-01.png' : '/Wavythought Clear Logo-01.png'
-  const activeGalleryImages = activeGalleryConcept?.images || []
-  const activeGalleryImageSrc = activeGalleryImages[activeGalleryIndex] || null
+  const activeGallerySlides = getConceptSlides(activeGalleryConcept)
+  const activeGallerySlide = activeGallerySlides[activeGalleryIndex] || null
+  const renderActiveSlideContent = () => {
+    if (!activeGallerySlide) {
+      return (
+        <div
+          className={`flex h-full w-full items-center justify-center text-[0.65rem] uppercase tracking-[0.35em] ${
+            lightsOff ? 'text-white/70' : 'text-[#4f4656]'
+          }`}
+        >
+          Loading...
+        </div>
+      )
+    }
+    if (activeGallerySlide.type === 'model') {
+      const format = (activeGallerySlide.format || '').toLowerCase()
+      if (['glb', 'gltf'].includes(format)) {
+        return <ModelViewerSlide src={activeGallerySlide.src} isDark={lightsOff} />
+      }
+      const buttonClasses = `rounded-full border px-6 py-2 text-[0.6rem] font-semibold uppercase tracking-[0.35em] transition ${
+        lightsOff ? 'border-white/25 text-white hover:bg-white/10' : 'border-[#1f1b1f]/20 text-[#1f1b1f] hover:bg-white'
+      }`
+      if (format === 'usdz') {
+        return (
+          <div
+            className={`flex h-full w-full flex-col items-center justify-center gap-4 px-6 text-center ${
+              lightsOff ? 'text-white' : 'text-[#1f1b1f]'
+            }`}
+          >
+            <p className="text-xs uppercase tracking-[0.4em]">3D asset available</p>
+            <p className="text-sm opacity-80">Open this view on an iPhone/iPad to launch the USDZ model in AR.</p>
+            <a href={activeGallerySlide.src} rel="ar" className={buttonClasses}>
+              Open in AR
+            </a>
+          </div>
+        )
+      }
+      return (
+        <div
+          className={`flex h-full w-full flex-col items-center justify-center gap-4 px-6 text-center ${
+            lightsOff ? 'text-white' : 'text-[#1f1b1f]'
+          }`}
+        >
+          <p className="text-xs uppercase tracking-[0.4em]">Download 3D asset</p>
+          <p className="text-sm opacity-80">This format isn&apos;t supported inline yet, but you can download it below.</p>
+          <a href={activeGallerySlide.src} download className={buttonClasses}>
+            Download File
+          </a>
+        </div>
+      )
+    }
+    return (
+      <img
+        src={activeGallerySlide.src}
+        alt={`${activeGalleryConcept?.title || 'Concept'} slide ${activeGalleryIndex + 1} of ${activeGallerySlides.length}`}
+        className="h-full w-full object-cover"
+      />
+    )
+  }
+
   const galleryOverlayClass = lightsOff
     ? 'bg-[radial-gradient(circle_at_center,rgba(8,6,18,0.95),rgba(2,1,6,0.9))] backdrop-blur'
     : 'bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.85),rgba(210,205,230,0.82))] backdrop-blur'
@@ -332,8 +661,9 @@ const Shop = () => {
     : 'border-white/70 bg-white shadow-[0_35px_90px_rgba(31,27,31,0.18)]'
 
   const openConceptGallery = (concept, startIndex = 0) => {
-    if (!concept?.images || concept.images.length === 0) return
-    const boundedIndex = Math.min(Math.max(startIndex, 0), concept.images.length - 1)
+    const slides = getConceptSlides(concept)
+    if (slides.length === 0) return
+    const boundedIndex = Math.min(Math.max(startIndex, 0), slides.length - 1)
     setActiveGalleryConcept(concept)
     setActiveGalleryIndex(boundedIndex)
   }
@@ -344,19 +674,21 @@ const Shop = () => {
   }
 
   const showGalleryNext = () => {
-    if (!activeGalleryConcept?.images?.length) return
-    setActiveGalleryIndex((prev) => (prev + 1) % activeGalleryConcept.images.length)
+    const slideCount = activeGallerySlides.length
+    if (slideCount <= 1) return
+    setActiveGalleryIndex((prev) => (prev + 1) % slideCount)
   }
 
   const showGalleryPrev = () => {
-    if (!activeGalleryConcept?.images?.length) return
-    setActiveGalleryIndex((prev) => (prev - 1 + activeGalleryConcept.images.length) % activeGalleryConcept.images.length)
+    const slideCount = activeGallerySlides.length
+    if (slideCount <= 1) return
+    setActiveGalleryIndex((prev) => (prev - 1 + slideCount) % slideCount)
   }
 
   const selectGalleryImage = (index) => {
-    if (!activeGalleryConcept?.images?.length) return
-    const imageCount = activeGalleryConcept.images.length
-    const boundedIndex = Math.max(0, Math.min(index, imageCount - 1))
+    const slideCount = activeGallerySlides.length
+    if (slideCount === 0) return
+    const boundedIndex = Math.max(0, Math.min(index, slideCount - 1))
     setActiveGalleryIndex(boundedIndex)
   }
 
@@ -365,76 +697,35 @@ const Shop = () => {
     setIsSortMenuOpen(false)
   }
 
-  const addToCart = (concept) => {
-    setCartItems((prev) => {
-      const nextQuantity = (prev[concept.id]?.quantity || 0) + 1
-      return {
-        ...prev,
-        [concept.id]: {
-          quantity: nextQuantity,
-          title: concept.title,
-          price: concept.price,
-          label: concept.label,
-          image: concept.images?.[0] || null,
-        },
-      }
-    })
-  }
-
-  const incrementItem = (conceptId) => {
-    setCartItems((prev) => ({
-      ...prev,
-      [conceptId]: {
-        ...prev[conceptId],
-        quantity: (prev[conceptId]?.quantity || 0) + 1,
-      },
-    }))
-  }
-
-  const decrementItem = (conceptId) => {
-    setCartItems((prev) => {
-      const current = prev[conceptId]
-      if (!current) return prev
-      if (current.quantity <= 1) {
-        const { [conceptId]: _removed, ...rest } = prev
-        return rest
-      }
-      return {
-        ...prev,
-        [conceptId]: { ...current, quantity: current.quantity - 1 },
-      }
-    })
-  }
-
-  const removeItem = (conceptId) => {
-    setCartItems((prev) => {
-      const { [conceptId]: _removed, ...rest } = prev
-      return rest
-    })
-  }
-
-  const clearCart = () => {
-    setCartItems({})
-  }
-
   const renderConceptCard = (concept) => {
-    const quantity = cartItems[concept.id]?.quantity || 0
-    const conceptImages = concept.images || []
-    const primaryImageSrc = conceptImages[0] || null
-    const hasConceptImages = conceptImages.length > 0
+    const conceptSlides = getConceptSlides(concept)
+    const primaryImageSlide = conceptSlides.find((slide) => slide.type === 'image')
+    const primaryImageSrc = primaryImageSlide?.src || null
+    const hasGalleryContent = conceptSlides.length > 0
+    const hasModelContent = conceptSlides.some((slide) => slide.type === 'model')
+    const isShopifyLinkedConcept = concept.id === 'concept-01'
+
+    const conceptPriceValue =
+      concept.id === 'concept-01' && typeof shopifyProductDetails?.price === 'number'
+        ? shopifyProductDetails.price
+        : concept.price
+    const formattedPrice =
+      typeof conceptPriceValue === 'number'
+        ? conceptPriceValue.toLocaleString(undefined, { minimumFractionDigits: 0 })
+        : conceptPriceValue
 
     return (
       <article key={concept.id} className={`flex h-full flex-col rounded-[32px] p-6 backdrop-blur ${cardShellClass}`}>
         <button
           type="button"
-          onClick={hasConceptImages ? () => openConceptGallery(concept) : undefined}
-          disabled={!hasConceptImages}
+          onClick={hasGalleryContent ? () => openConceptGallery(concept) : undefined}
+          disabled={!hasGalleryContent}
           className={`group relative mb-4 w-full overflow-hidden rounded-[28px] border transition ${
             lightsOff
               ? 'border-white/15 bg-white/5'
               : 'border-[#1f1b1f]/10 bg-white/70'
-          } ${hasConceptImages ? 'cursor-pointer hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7bd5]' : 'cursor-not-allowed opacity-70'} aspect-square flex items-center justify-center`}
-          aria-label={hasConceptImages ? `View ${concept.title} gallery` : undefined}
+          } ${hasGalleryContent ? 'cursor-pointer hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7bd5]' : 'cursor-not-allowed opacity-70'} aspect-square flex items-center justify-center`}
+          aria-label={hasGalleryContent ? `View ${concept.title} gallery` : undefined}
         >
           {primaryImageSrc ? (
             <img src={primaryImageSrc} alt={`${concept.title} preview`} className="h-full w-full object-cover" loading="lazy" />
@@ -447,7 +738,16 @@ const Shop = () => {
               }`}
             />
           )}
-          {hasConceptImages && (
+          {hasModelContent && !primaryImageSrc && (
+            <span
+              className={`pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-semibold uppercase tracking-[0.4em] ${
+                lightsOff ? 'text-white' : 'text-[#1f1b1f]'
+              }`}
+            >
+              3D View
+            </span>
+          )}
+          {hasGalleryContent && (
             <span className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/40 px-4 py-1 text-[0.55rem] uppercase tracking-[0.35em] text-white opacity-0 transition group-hover:opacity-100">
               View
             </span>
@@ -463,26 +763,22 @@ const Shop = () => {
           <div className="flex flex-col gap-1">
             <span className={`text-xs uppercase tracking-[0.4em] ${cardSubtleText}`}>Edition</span>
             <span className="text-lg font-semibold tracking-[0.1em]">
-              ${concept.price.toLocaleString(undefined, { minimumFractionDigits: 0 })}
+              ${formattedPrice}
             </span>
           </div>
           <div className="mt-auto flex flex-col gap-3 pt-4">
-            {quantity === 0 ? (
-              <button
-                type="button"
-                onClick={() => addToCart(concept)}
-                className={`${cardActionButtonBase} ${cartButtonStyles}`}
-              >
-                Add to Cart
-              </button>
+            {isShopifyLinkedConcept ? (
+              <div className="w-full" aria-live="polite">
+                <div
+                  id={SHOPIFY_BUY_BUTTON_CONFIG.hostIds?.card}
+                  className="shopify-buy-button-host"
+                  style={{ minHeight: '54px', overflow: 'visible', padding: '6px 0' }}
+                />
+              </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => removeItem(concept.id)}
-                className={`${cardActionButtonBase} ${cardRemoveButtonStyles}`}
-              >
-                Remove item
-              </button>
+              <p className={`text-xs uppercase tracking-[0.35em] ${cardSubtleText}`}>
+                Reach out via the main form to start an order.
+              </p>
             )}
           </div>
         </div>
@@ -493,36 +789,15 @@ const Shop = () => {
 
   return (
     <div className={`relative min-h-screen overflow-hidden ${pageBackground}`}>
-      <div
-        className={`fixed left-4 top-24 z-30 hidden items-center px-6 transition-opacity duration-200 sm:flex sm:left-6 ${floatingControlsVisibility}`}
-      >
+      <div className="fixed left-4 top-24 z-30 hidden items-center px-6 transition-opacity duration-200 sm:flex sm:left-6">
         <a
           href="/"
-          className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${cartButtonStyles}`}
+          className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${lightToggleStyles}`}
         >
           Home
         </a>
       </div>
-      <div
-        className={`fixed right-4 top-24 z-30 hidden items-center gap-3 px-6 transition-opacity duration-200 sm:flex sm:right-6 ${floatingControlsVisibility}`}
-      >
-        <button
-          type="button"
-          onClick={() => setIsCartOpen((prev) => !prev)}
-          aria-pressed={isCartOpen}
-          aria-label="Open cart"
-          className={`relative z-20 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${cartButtonStyles}`}
-        >
-          Cart
-          {hasCartItems && (
-            <span
-              className={`absolute left-0 top-0 z-30 inline-flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-semibold leading-none shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md ${cartBadgeStyles}`}
-              style={{ transform: 'translate(54px, -15px)' }}
-            >
-              {cartCount}
-            </span>
-          )}
-        </button>
+      <div className="fixed right-4 top-24 z-30 hidden items-center gap-3 px-6 transition-opacity duration-200 sm:flex sm:right-6">
         <button
           type="button"
           onClick={() => setLightsOff((prev) => !prev)}
@@ -532,25 +807,7 @@ const Shop = () => {
           {lightsOff ? 'Lights On' : 'Lights Off'}
         </button>
       </div>
-      <div
-        className={`fixed right-0 top-24 z-30 flex items-center justify-end gap-2 transition-opacity duration-200 sm:hidden ${floatingControlsVisibility}`}
-      >
-        <button
-          type="button"
-          onClick={() => setIsCartOpen((prev) => !prev)}
-          aria-pressed={isCartOpen}
-          className={`relative z-20 rounded-full border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.4em] transition ${cartButtonStyles}`}
-        >
-          Cart
-          {hasCartItems && (
-            <span
-              className={`absolute left-0 top-0 z-30 inline-flex h-5 w-5 items-center justify-center rounded-full border text-[9px] font-semibold leading-none shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur-md ${cartBadgeStyles}`}
-              style={{ transform: 'translate(54px, -15px)' }}
-            >
-              {cartCount}
-            </span>
-          )}
-        </button>
+      <div className="fixed right-0 top-24 z-30 flex items-center justify-end gap-2 transition-opacity duration-200 sm:hidden">
         <button
           type="button"
           aria-label={`Toggle lights (${lightsOff ? 'turn on' : 'turn off'})`}
@@ -562,12 +819,10 @@ const Shop = () => {
           {lightsOff ? 'Lights On' : 'Lights Off'}
         </button>
       </div>
-      <div
-        className={`fixed left-3 top-24 z-30 flex items-center transition-opacity duration-200 sm:hidden ${floatingControlsVisibility}`}
-      >
+      <div className="fixed left-3 top-24 z-30 flex items-center transition-opacity duration-200 sm:hidden">
         <a
           href="/"
-          className={`rounded-full border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.4em] transition ${cartButtonStyles}`}
+          className={`rounded-full border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.4em] transition ${lightToggleStyles}`}
         >
           Home
         </a>
@@ -605,7 +860,7 @@ const Shop = () => {
           </h1>
           <p className={`mx-auto mt-5 max-w-2xl text-base sm:text-lg ${heroMutedText}`}>
             A rotating selection of generative objects, lighting concepts, and limited drops. Reach out
-            for commissions while we finish wiring up the cart.
+            for commissions or special runs anytime via the form.
           </p>
         </header>
         <section
@@ -795,29 +1050,13 @@ const Shop = () => {
                   className={`relative mx-auto w-full max-w-3xl overflow-hidden rounded-[32px] border ${galleryImageShellClass}`}
                   style={{ maxHeight: '70vh' }}
                 >
-                  <div className="aspect-square w-full">
-                    {activeGalleryImageSrc ? (
-                      <img
-                        src={activeGalleryImageSrc}
-                        alt={`${activeGalleryConcept.title} image ${activeGalleryIndex + 1} of ${activeGalleryImages.length}`}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div
-                        className={`h-full w-full bg-gradient-to-br ${
-                          lightsOff
-                            ? 'from-white/15 via-[#ff7bd5]/15 to-transparent'
-                            : 'from-[#f4e7ff]/80 via-[#ffe3f6]/60 to-transparent'
-                        }`}
-                      />
-                    )}
-                  </div>
+                  <div className="aspect-square w-full">{renderActiveSlideContent()}</div>
                 </div>
-                {activeGalleryImages.length > 1 && (
+                {activeGallerySlides.length > 1 && (
                   <>
                     <button
                       type="button"
-                      aria-label="View previous image"
+                      aria-label="View previous slide"
                       onClick={showGalleryPrev}
                       className={`absolute top-1/2 hidden -translate-y-1/2 sm:flex ${galleryNavButtonClass}`}
                       style={{ left: '-84px' }}
@@ -828,7 +1067,7 @@ const Shop = () => {
                     </button>
                     <button
                       type="button"
-                      aria-label="View next image"
+                      aria-label="View next slide"
                       onClick={showGalleryNext}
                       className={`absolute top-1/2 hidden -translate-y-1/2 sm:flex ${galleryNavButtonClass}`}
                       style={{ right: '-84px' }}
@@ -841,11 +1080,11 @@ const Shop = () => {
                 )}
               </div>
               <p className={`text-center text-[0.65rem] uppercase tracking-[0.35em] ${cardSubtleText}`}>
-                Image {activeGalleryIndex + 1} of {activeGalleryImages.length || 1}
+                View {activeGalleryIndex + 1} of {activeGallerySlides.length || 1}
               </p>
-              {activeGalleryImages.length > 1 && (
+              {activeGallerySlides.length > 1 && (
                 <div className="flex flex-wrap items-center justify-center gap-3">
-                  {activeGalleryImages.map((imageSrc, index) => (
+                  {activeGallerySlides.map((slide, index) => (
                     <button
                       key={`${activeGalleryConcept.id}-thumb-${index}`}
                       type="button"
@@ -853,157 +1092,37 @@ const Shop = () => {
                       className={`h-16 w-16 overflow-hidden rounded-2xl border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7bd5] ${galleryThumbBaseClass} ${
                         index === activeGalleryIndex ? galleryThumbActiveClass : 'opacity-70 hover:opacity-100'
                       }`}
-                      aria-label={`View ${activeGalleryConcept.title} image ${index + 1}`}
+                      aria-label={`View ${activeGalleryConcept.title} slide ${index + 1}`}
                     >
-                      <img src={imageSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
+                      {slide.type === 'image' ? (
+                        <img src={slide.src} alt="" className="h-full w-full object-cover" loading="lazy" />
+                      ) : (
+                        <div
+                          className={`flex h-full w-full items-center justify-center text-[0.55rem] font-semibold uppercase tracking-[0.35em] ${
+                            lightsOff ? 'text-white' : 'text-[#1f1b1f]'
+                          }`}
+                        >
+                          3D
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
               )}
-              <div className="mt-6 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => addToCart(activeGalleryConcept)}
-                  className={`rounded-full border px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] transition ${cartButtonStyles}`}
-                >
-                  Add to Cart
-                </button>
-              </div>
+              {activeGalleryConcept?.id === 'concept-01' && (
+                <div className="mt-6 flex justify-center" aria-live="polite">
+                  <div
+                    id={SHOPIFY_BUY_BUTTON_CONFIG.hostIds?.modal}
+                    className="shopify-buy-button-host w-full max-w-xs"
+                    style={{ minHeight: '54px', overflow: 'visible', padding: '6px 0' }}
+                  />
+                </div>
+              )}
             </div>
           </section>
         </div>
       )}
 
-      {isCartOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center sm:justify-end">
-          <button
-            type="button"
-            aria-label="Close cart"
-            onClick={() => setIsCartOpen(false)}
-            className={`absolute inset-0 ${lightsOff ? 'bg-[#020103]/95' : 'bg-black/75'}`}
-          />
-          <aside
-            className="relative z-50 flex h-full w-full justify-end pointer-events-none"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Cart"
-          >
-            <div className={`relative h-full w-full max-w-[420px] border-l p-5 pb-16 shadow-2xl pointer-events-auto ${cartPanelClass} sm:max-w-[460px]`}>
-              <button
-                type="button"
-                aria-label="Close cart"
-                className={`absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7bd5] ${cartCloseButtonStyles}`}
-                onClick={() => setIsCartOpen(false)}
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6 6 18" strokeLinecap="round" />
-                  <path d="M6 6l12 12" strokeLinecap="round" />
-                </svg>
-              </button>
-          <div className="mt-10 flex items-center justify-between gap-6 border-b border-white/10 pb-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.25em]">{cartBadgeLabel}</p>
-              <p className="text-2xl font-semibold">
-              ${cartSubtotal.toLocaleString(undefined, { minimumFractionDigits: 0 })}
-            </p>
-            </div>
-          </div>
-              <div className="mt-24 flex flex-col gap-4 overflow-y-auto pr-1 pt-24">
-                {hasCartItems ? (
-                  Object.entries(cartItems).map(([id, item]) => (
-                    <div key={id} className="rounded-2xl border border-white/15 p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-[12px] border border-white/15 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                          {item.image ? (
-                            <img
-                              src={item.image}
-                              alt={`${item.title} preview`}
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div
-                              className="h-full w-full"
-                              style={{
-                                backgroundImage: lightsOff
-                                  ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 120, 210, 0.45), rgba(120, 90, 255, 0.35))'
-                                  : 'linear-gradient(135deg, rgba(244, 231, 255, 0.95), rgba(255, 213, 241, 0.9), rgba(140, 89, 255, 0.75))',
-                              }}
-                            />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div>
-                            <p className={`text-[0.55rem] uppercase tracking-[0.35em] ${cardSubtleText}`}>{item.label}</p>
-                            <p className="text-base font-semibold">{item.title}</p>
-                          </div>
-                          <div className="mt-3 flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                              <button
-                                type="button"
-                                className="h-8 w-8 rounded-full bg-transparent text-lg leading-none text-current transition hover:opacity-70"
-                                onClick={() => decrementItem(id)}
-                                aria-label="Decrease quantity"
-                              >
-                                -
-                              </button>
-                              <span className="text-sm uppercase tracking-[0.25em]">{item.quantity}</span>
-                              <button
-                                type="button"
-                                className="h-8 w-8 rounded-full bg-transparent text-lg leading-none text-current transition hover:opacity-70"
-                                onClick={() => incrementItem(id)}
-                                aria-label="Increase quantity"
-                              >
-                                +
-                              </button>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-sm uppercase tracking-[0.25em]">
-                                ${(item.price * item.quantity).toLocaleString(undefined, { minimumFractionDigits: 0 })}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-              <p className={`text-center text-sm ${cartEmptyText}`}>No items yet - explore the concepts below.</p>
-            )}
-          </div>
-              <div className="sticky bottom-6 mt-10 space-y-3 border-t border-white/10 bg-inherit/90 pt-5 backdrop-blur-sm">
-            <div className="flex items-center justify-between text-sm uppercase tracking-[0.25em]">
-              <span>Subtotal</span>
-              <span>${cartSubtotal.toLocaleString(undefined, { minimumFractionDigits: 0 })}</span>
-            </div>
-            <button
-              type="button"
-              onClick={clearCart}
-              className={`w-full rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${
-                lightsOff
-                  ? 'border-white/20 text-white hover:bg-white/10'
-                  : 'border-[#1f1b1f]/20 text-[#1f1b1f] hover:bg-[#f4eef9]'
-              } ${hasCartItems ? '' : 'cursor-not-allowed opacity-60'}`}
-              disabled={!hasCartItems}
-            >
-              Clear Cart
-            </button>
-            <button
-              type="button"
-              className={`w-full rounded-full border px-4 py-3 text-xs font-semibold uppercase tracking-[0.35em] transition ${
-                lightsOff
-                  ? 'border-white/40 text-white hover:bg-white/10'
-                  : 'border-[#1f1b1f] text-[#1f1b1f] hover:bg-[#1f1b1f] hover:text-white'
-              } ${hasCartItems ? '' : 'cursor-not-allowed opacity-60'}`}
-              disabled={!hasCartItems}
-            >
-              {hasCartItems ? 'Contact to Purchase' : 'Add an item to start'}
-            </button>
-          </div>
-        </div>
-      </aside>
-        </div>
-      )}
       <button
         type="button"
         onClick={scrollToTop}
