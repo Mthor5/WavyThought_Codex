@@ -244,6 +244,9 @@ const Shop = () => {
   const cardSubtleText = lightsOff ? 'text-white/60' : 'text-[#615167]'
   const footerText = lightsOff ? 'text-white/60' : 'text-[#5b4a63]'
   const cartButtonStyles = lightToggleStyles
+  const cartCloseButtonStyles = lightsOff
+    ? 'border-white/20 text-white hover:bg-white/10'
+    : 'border-[#1f1b1f]/20 text-[#1f1b1f] hover:bg-[#f4eef9]'
   const sortButtonStyles = lightsOff
     ? 'border-transparent bg-white/10 text-white hover:bg-white/20'
     : 'border-transparent bg-white/80 text-[#1f1b1f] shadow-[0_10px_25px_rgba(31,27,31,0.08)] hover:bg-white'
@@ -376,7 +379,6 @@ const Shop = () => {
         },
       }
     })
-    setIsCartOpen(true)
   }
 
   const incrementItem = (conceptId) => {
@@ -409,6 +411,10 @@ const Shop = () => {
       const { [conceptId]: _removed, ...rest } = prev
       return rest
     })
+  }
+
+  const clearCart = () => {
+    setCartItems({})
   }
 
   const renderConceptCard = (concept) => {
@@ -886,10 +892,13 @@ const Shop = () => {
               <button
                 type="button"
                 aria-label="Close cart"
-                className="absolute right-6 top-6 text-xs uppercase tracking-[0.35em] text-[#ff7bd5] transition hover:opacity-80"
+                className={`absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7bd5] ${cartCloseButtonStyles}`}
                 onClick={() => setIsCartOpen(false)}
               >
-                Close
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6 6 18" strokeLinecap="round" />
+                  <path d="M6 6l12 12" strokeLinecap="round" />
+                </svg>
               </button>
           <div className="mt-10 flex items-center justify-between gap-6 border-b border-white/10 pb-4">
             <div>
@@ -967,6 +976,18 @@ const Shop = () => {
               <span>Subtotal</span>
               <span>${cartSubtotal.toLocaleString(undefined, { minimumFractionDigits: 0 })}</span>
             </div>
+            <button
+              type="button"
+              onClick={clearCart}
+              className={`w-full rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${
+                lightsOff
+                  ? 'border-white/20 text-white hover:bg-white/10'
+                  : 'border-[#1f1b1f]/20 text-[#1f1b1f] hover:bg-[#f4eef9]'
+              } ${hasCartItems ? '' : 'cursor-not-allowed opacity-60'}`}
+              disabled={!hasCartItems}
+            >
+              Clear Cart
+            </button>
             <button
               type="button"
               className={`w-full rounded-full border px-4 py-3 text-xs font-semibold uppercase tracking-[0.35em] transition ${
