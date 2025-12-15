@@ -387,16 +387,13 @@ const Shop = () => {
           .then((product) => {
             if (!product) return
             const variant = product.variants?.[0]
-            const priceSource =
-              variant?.price ??
-              variant?.priceV2?.amount ??
-              product?.priceRange?.minVariantPrice?.amount ??
-              product?.variants?.[0]?.price
+            const rawPrice = variant?.priceV2?.amount ?? variant?.price ?? product?.priceRange?.minVariantPrice?.amount
             const currencySource =
               variant?.priceV2?.currencyCode ??
               product?.priceRange?.minVariantPrice?.currencyCode ??
               'USD'
-            const parsedPrice = Number(priceSource)
+            if (rawPrice == null) return
+            const parsedPrice = Number(rawPrice)
             if (Number.isFinite(parsedPrice)) {
               setShopifyProductDetails({
                 price: parsedPrice,
@@ -407,8 +404,6 @@ const Shop = () => {
           })
           .catch(() => {})
       }
-
-      fetchProductPrice()
 
       ShopifyBuy.UI.onReady(client).then((ui) => {
         if (isCancelled) return
@@ -713,6 +708,7 @@ const Shop = () => {
       typeof conceptPriceValue === 'number'
         ? conceptPriceValue.toLocaleString(undefined, { minimumFractionDigits: 0 })
         : conceptPriceValue
+    const isShopifyPriceLoading = concept.id === 'concept-01' && !shopifyProductFetchedRef.current
 
     return (
       <article key={concept.id} className={`flex h-full flex-col rounded-[32px] p-6 backdrop-blur ${cardShellClass}`}>
@@ -762,9 +758,13 @@ const Shop = () => {
           <div className="mt-4 flex flex-1 flex-col">
           <div className="flex flex-col gap-1">
             <span className={`text-xs uppercase tracking-[0.4em] ${cardSubtleText}`}>Edition</span>
-            <span className="text-lg font-semibold tracking-[0.1em]">
-              ${formattedPrice}
-            </span>
+            {isShopifyPriceLoading ? (
+              <span className="text-lg font-semibold tracking-[0.1em] animate-pulse opacity-70">Fetching...</span>
+            ) : (
+              <span className="text-lg font-semibold tracking-[0.1em]">
+                ${formattedPrice}
+              </span>
+            )}
           </div>
           <div className="mt-auto flex flex-col gap-3 pt-4">
             {isShopifyLinkedConcept ? (
