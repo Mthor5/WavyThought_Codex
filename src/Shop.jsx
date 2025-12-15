@@ -13,6 +13,11 @@ const conceptCatalog = [
     title: 'Generative Texture Study',
     price: 480,
     blurb: 'Material and lighting explorations currently in fabrication. Email us if one speaks to you.',
+    images: [
+      '/Work Samples/disk 1.JPEG',
+      '/Work Samples/disk 2.JPEG',
+      '/Work Samples/disk 3.JPEG',
+    ],
   },
   {
     id: 'concept-02',
@@ -20,6 +25,11 @@ const conceptCatalog = [
     title: 'Layered Wave Grid',
     price: 520,
     blurb: 'Stacked acrylic gradients shaped by generative wave equations.',
+    images: [
+      '/Work Samples/blazers 00.JPEG',
+      '/Work Samples/blazers 01.JPEG',
+      '/Work Samples/blazers 02.JPEG',
+    ],
   },
   {
     id: 'concept-03',
@@ -27,6 +37,11 @@ const conceptCatalog = [
     title: 'Chromatic Bloom Lamp',
     price: 640,
     blurb: 'Blooming light sculpture with programmable gradients.',
+    images: [
+      '/Work Samples/mountain 01.JPEG',
+      '/Work Samples/mountain 03.JPEG',
+      '/Work Samples/lamp 01.JPEG',
+    ],
   },
   {
     id: 'concept-04',
@@ -34,6 +49,11 @@ const conceptCatalog = [
     title: 'Tactile Foam Relief',
     price: 390,
     blurb: 'Hand-finished relief capturing simulated foam turbulence.',
+    images: [
+      '/Work Samples/card holder.JPEG',
+      '/Work Samples/facet tray.JPEG',
+      '/Work Samples/airtag keychain.JPEG',
+    ],
   },
   {
     id: 'concept-05',
@@ -41,6 +61,11 @@ const conceptCatalog = [
     title: 'Mirror Wave Cabinet',
     price: 1200,
     blurb: 'Furniture study bending reflective planes through CNC carving.',
+    images: [
+      '/Work Samples/Plank 04.JPEG',
+      '/Work Samples/Plank 05.JPEG',
+      '/Work Samples/plank 01.JPEG',
+    ],
   },
   {
     id: 'concept-06',
@@ -48,6 +73,11 @@ const conceptCatalog = [
     title: 'Sound Reactive Wall',
     price: 950,
     blurb: 'LED tessellation that responds to real-time ambient sound.',
+    images: [
+      '/Work Samples/shoe 01.JPEG',
+      '/Work Samples/shoe 02.JPEG',
+      '/Work Samples/shoe 03.JPEG',
+    ],
   },
 ]
 
@@ -56,6 +86,8 @@ const Shop = () => {
   const [cartItems, setCartItems] = useState({})
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [showScrollToTop, setShowScrollToTop] = useState(false)
+  const [activeGalleryConcept, setActiveGalleryConcept] = useState(null)
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState(0)
 
   useEffect(() => {
     document.title = 'WavyThought - Shop'
@@ -116,6 +148,52 @@ const Shop = () => {
     }
   }, [])
 
+  useEffect(() => {
+    if (!activeGalleryConcept) return undefined
+    if (typeof document === 'undefined') return undefined
+    const { body } = document
+    if (!body) return undefined
+    const currentLocks = Number(body.dataset.modalLocks || '0')
+    if (currentLocks === 0) {
+      body.dataset.prevOverflow = body.style.overflow || ''
+      body.style.overflow = 'hidden'
+    }
+    body.dataset.modalLocks = String(currentLocks + 1)
+    body.classList.add('modal-open')
+    return () => {
+      const locks = Number(body.dataset.modalLocks || '1')
+      const next = Math.max(0, locks - 1)
+      body.dataset.modalLocks = String(next)
+      if (next === 0) {
+        body.style.overflow = body.dataset.prevOverflow || ''
+        delete body.dataset.prevOverflow
+        body.classList.remove('modal-open')
+      }
+    }
+  }, [activeGalleryConcept])
+
+  useEffect(() => {
+    if (!activeGalleryConcept) return undefined
+    const handleKeyDown = (event) => {
+      const imageCount = activeGalleryConceptx.images?.length || 0
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setActiveGalleryConcept(null)
+        setActiveGalleryIndex(0)
+      } else if (event.key === 'ArrowRight' && imageCount > 1) {
+        event.preventDefault()
+        setActiveGalleryIndex((prev) => (prev + 1) % imageCount)
+      } else if (event.key === 'ArrowLeft' && imageCount > 1) {
+        event.preventDefault()
+        setActiveGalleryIndex((prev) => (prev - 1 + imageCount) % imageCount)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [activeGalleryConcept])
+
   const bannerCopy =
     'Limited experiments and texture studies. Custom project requests stay open via the main form.'
   const lightToggleStyles = lightsOff
@@ -137,8 +215,8 @@ const Shop = () => {
   const footerText = lightsOff ? 'text-white/60' : 'text-[#5b4a63]'
   const cartButtonStyles = lightToggleStyles
   const quantityButtonStyles = lightsOff
-    ? 'border-white/40 text-white hover:bg-white/10'
-    : 'border-[#1f1b1f]/30 text-[#1f1b1f] hover:bg-[#f4e7ff]'
+    ? 'text-white hover:text-white/70'
+    : 'text-[#1f1b1f] hover:text-[#8b6fa1]'
   const cartPanelClass = lightsOff
     ? 'border-white/15 bg-white/5 text-white/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]'
     : 'border-[#1f1b1f]/15 bg-white/95 text-[#1f1b1f]/90 shadow-[0_35px_80px_rgba(31,27,31,0.12)]'
@@ -172,6 +250,52 @@ const Shop = () => {
   const scrollToTop = () => {
     if (typeof window === 'undefined') return
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  const heroLogoSrc = lightsOff ? '/Wavythought Clear Logo white-01.png' : '/Wavythought Clear Logo-01.png'
+  const activeGalleryImages = activeGalleryConcept?.images || []
+  const activeGalleryImageSrc = activeGalleryImages[activeGalleryIndex] || null
+  const galleryOverlayClass = lightsOff
+    ? 'bg-[#050307]/85 backdrop-blur-sm'
+    : 'bg-black/60 backdrop-blur-sm'
+  const galleryPanelClass = lightsOff
+    ? 'border border-white/20 bg-black/30 text-white shadow-[0_50px_140px_rgba(0,0,0,0.65)] backdrop-blur-2xl'
+    : 'border border-white/60 bg-white/40 text-[#1f1b1f] shadow-[0_40px_120px_rgba(31,27,31,0.2)] backdrop-blur-2xl'
+  const galleryControlButtonClass = lightsOff
+    ? 'border-white/30 bg-black/35 text-white hover:bg-black/55'
+    : 'border-[#1f1b1f]/20 bg-white/80 text-[#1f1b1f] hover:bg-white'
+  const galleryThumbBaseClass = lightsOff ? 'border-white/20 bg-white/5' : 'border-[#1f1b1f]/15 bg-white'
+  const galleryThumbActiveClass = lightsOff ? 'ring-2 ring-white/90' : 'ring-2 ring-[#1f1b1f]'
+  const galleryImageShellClass = lightsOff
+    ? 'border-white/15 bg-black/30'
+    : 'border-[#1f1b1f]/10 bg-white'
+
+  const openConceptGallery = (concept, startIndex = 0) => {
+    if (!concept?.images || concept.images.length === 0) return
+    const boundedIndex = Math.min(Math.max(startIndex, 0), concept.images.length - 1)
+    setActiveGalleryConcept(concept)
+    setActiveGalleryIndex(boundedIndex)
+  }
+
+  const closeConceptGallery = () => {
+    setActiveGalleryConcept(null)
+    setActiveGalleryIndex(0)
+  }
+
+  const showGalleryNext = () => {
+    if (!activeGalleryConcept?.images?.length) return
+    setActiveGalleryIndex((prev) => (prev + 1) % activeGalleryConcept.images.length)
+  }
+
+  const showGalleryPrev = () => {
+    if (!activeGalleryConcept?.images?.length) return
+    setActiveGalleryIndex((prev) => (prev - 1 + activeGalleryConcept.images.length) % activeGalleryConcept.images.length)
+  }
+
+  const selectGalleryImage = (index) => {
+    if (!activeGalleryConcept?.images?.length) return
+    const imageCount = activeGalleryConcept.images.length
+    const boundedIndex = Math.max(0, Math.min(index, imageCount - 1))
+    setActiveGalleryIndex(boundedIndex)
   }
 
   const addToCart = (concept) => {
@@ -219,16 +343,40 @@ const Shop = () => {
 
   const renderConceptCard = (concept) => {
     const quantity = cartItems[concept.id]?.quantity || 0
+    const conceptImages = concept.images || []
+    const primaryImageSrc = conceptImages[0] || null
+    const hasConceptImages = conceptImages.length > 0
 
     return (
       <article key={concept.id} className={`rounded-[32px] p-6 backdrop-blur ${cardShellClass}`}>
-        <div
-          className={`mb-4 h-48 rounded-[28px] bg-gradient-to-br ${
+        <button
+          type="button"
+          onClick={hasConceptImages ? () => openConceptGallery(concept) : undefined}
+          disabled={!hasConceptImages}
+          className={`group relative mb-4 flex h-48 w-full items-center justify-center overflow-hidden rounded-[28px] border transition ${
             lightsOff
-              ? 'from-white/15 via-[#ff7bd5]/15 to-transparent'
-              : 'from-[#f4e7ff]/80 via-[#ffe3f6]/60 to-transparent'
-          }`}
-        />
+              ? 'border-white/15 bg-white/5'
+              : 'border-[#1f1b1f]/10 bg-white/70'
+          } ${hasConceptImages ? 'cursor-pointer hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7bd5]' : 'cursor-not-allowed opacity-70'}`}
+          aria-label={hasConceptImages ? `View ${concept.title} gallery` : undefined}
+        >
+          {primaryImageSrc ? (
+            <img src={primaryImageSrc} alt={`${concept.title} preview`} className="h-full w-full object-cover" loading="lazy" />
+          ) : (
+            <div
+              className={`h-full w-full bg-gradient-to-br ${
+                lightsOff
+                  ? 'from-white/15 via-[#ff7bd5]/15 to-transparent'
+                  : 'from-[#f4e7ff]/80 via-[#ffe3f6]/60 to-transparent'
+              }`}
+            />
+          )}
+          {hasConceptImages && (
+            <span className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/40 px-4 py-1 text-[0.55rem] uppercase tracking-[0.35em] text-white opacity-0 transition group-hover:opacity-100">
+              View
+            </span>
+          )}
+        </button>
         <p className={`text-[0.6rem] uppercase tracking-[0.38em] ${cardSubtleText}`}>{concept.label}</p>
         <h2 className={`mt-2 text-xl font-semibold ${lightsOff ? 'text-white' : 'text-[#1f1b1f]'}`}>
           {concept.title}
@@ -260,16 +408,16 @@ const Shop = () => {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    className={`h-8 w-8 rounded-full border text-lg leading-none transition ${quantityButtonStyles}`}
+                    className={`px-2 text-lg font-semibold leading-none transition ${quantityButtonStyles}`}
                     onClick={() => decrementItem(concept.id)}
                     aria-label="Decrease quantity"
                   >
-                    –
+                    -
                   </button>
                   <span className="text-base font-semibold">{quantity}</span>
                   <button
                     type="button"
-                    className={`h-8 w-8 rounded-full border text-lg leading-none transition ${quantityButtonStyles}`}
+                    className={`px-2 text-lg font-semibold leading-none transition ${quantityButtonStyles}`}
                     onClick={() => incrementItem(concept.id)}
                     aria-label="Increase quantity"
                   >
@@ -389,7 +537,7 @@ const Shop = () => {
       <main className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col gap-16 px-4 pb-24 pt-28 sm:pt-32">
         <header className="text-center">
           <img
-            src="/Wavythought Clear Logo-01.png"
+            src={heroLogoSrc}
             alt="WavyThought logo"
             className="mx-auto opacity-90"
             style={{ width: '400px', maxWidth: '95vw', height: 'auto' }}
@@ -519,6 +667,94 @@ const Shop = () => {
         </footer>
 
       </main>
+      {activeGalleryConcept && (
+        <div
+          className={`fixed inset-0 z-[80] flex items-center justify-center px-4 py-8 ${galleryOverlayClass}`}
+          onClick={closeConceptGallery}
+        >
+          <section
+            className={`relative w-full max-w-4xl rounded-[36px] p-5 sm:p-8 ${galleryPanelClass}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${activeGalleryConcept.title} gallery`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              aria-label="Close gallery"
+              onClick={closeConceptGallery}
+              className={`absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border text-lg font-semibold transition ${galleryControlButtonClass}`}
+            >
+              x
+            </button>
+            <div className="space-y-5 pt-6 sm:space-y-6 sm:pt-2">
+              <div className="text-center">
+                <p className={`text-[0.6rem] uppercase tracking-[0.35em] ${cardSubtleText}`}>{activeGalleryConcept.label}</p>
+                <h2 className="mt-2 text-2xl font-semibold">{activeGalleryConcept.title}</h2>
+                <p className={`mt-2 text-sm ${lightsOff ? 'text-white/70' : 'text-[#4f4656]'}`}>{activeGalleryConcept.blurb}</p>
+              </div>
+              <div className="relative">
+                <div className={`overflow-hidden rounded-[32px] border ${galleryImageShellClass}`}>
+                  {activeGalleryImageSrc ? (
+                    <img
+                      src={activeGalleryImageSrc}
+                      alt={`${activeGalleryConcept.title} image ${activeGalleryIndex + 1} of ${activeGalleryImages.length}`}
+                      className="h-[320px] w-full object-cover sm:h-[420px]"
+                    />
+                  ) : (
+                    <div className="h-[320px] w-full sm:h-[420px]" />
+                  )}
+                </div>
+                {activeGalleryImages.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="View previous image"
+                      onClick={showGalleryPrev}
+                      className={`absolute left-3 top-1/2 -translate-y-1/2 rounded-full border px-3 py-2 transition ${galleryControlButtonClass}`}
+                    >
+                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="View next image"
+                      onClick={showGalleryNext}
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full border px-3 py-2 transition ${galleryControlButtonClass}`}
+                    >
+                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                  </>
+                )}
+              </div>
+              <p className={`text-center text-[0.65rem] uppercase tracking-[0.35em] ${cardSubtleText}`}>
+                Image {activeGalleryIndex + 1} of {activeGalleryImages.length || 1}
+              </p>
+              {activeGalleryImages.length > 1 && (
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  {activeGalleryImages.map((imageSrc, index) => (
+                    <button
+                      key={`${activeGalleryConcept.id}-thumb-${index}`}
+                      type="button"
+                      onClick={() => selectGalleryImage(index)}
+                      className={`h-16 w-16 overflow-hidden rounded-2xl border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7bd5] ${galleryThumbBaseClass} ${
+                        index === activeGalleryIndex ? galleryThumbActiveClass : 'opacity-70 hover:opacity-100'
+                      }`}
+                      aria-label={`View ${activeGalleryConcept.title} image ${index + 1}`}
+                    >
+                      <img src={imageSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
+
       {isCartOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center sm:justify-end">
           <button
