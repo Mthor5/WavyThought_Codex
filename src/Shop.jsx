@@ -214,9 +214,10 @@ const Shop = () => {
   const cardSubtleText = lightsOff ? 'text-white/60' : 'text-[#615167]'
   const footerText = lightsOff ? 'text-white/60' : 'text-[#5b4a63]'
   const cartButtonStyles = lightToggleStyles
-  const quantityButtonStyles = lightsOff
-    ? 'text-white hover:text-white/70'
-    : 'text-[#1f1b1f] hover:text-[#8b6fa1]'
+  const cardActionButtonBase = 'w-full rounded-full border px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] transition text-center'
+  const cardRemoveButtonStyles = lightsOff
+    ? 'border-transparent bg-[linear-gradient(120deg,rgba(255,190,120,0.95),rgba(255,110,175,0.92))] text-white shadow-[0_8px_18px_rgba(255,145,130,0.32)] hover:opacity-90'
+    : 'border-transparent bg-[linear-gradient(120deg,rgba(255,190,120,0.95),rgba(255,110,175,0.92))] text-[#1b1a1e] shadow-[0_8px_18px_rgba(255,145,130,0.32)] hover:opacity-90'
   const cartPanelClass = lightsOff
     ? 'border-white/15 bg-white/5 text-white/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]'
     : 'border-[#1f1b1f]/15 bg-white/95 text-[#1f1b1f]/90 shadow-[0_35px_80px_rgba(31,27,31,0.12)]'
@@ -225,8 +226,8 @@ const Shop = () => {
   const cartFooterShell = lightsOff ? 'border-white/15 bg-white/5' : 'border-[#1f1b1f]/15 bg-white/95'
   const cartEmptyText = lightsOff ? 'text-white/60' : 'text-[#5a4b64]'
   const cartBadgeStyles = lightsOff
-    ? 'border-[#ffd5fb]/60 bg-[linear-gradient(130deg,rgba(255,70,190,0.8),rgba(155,85,255,0.65),rgba(255,255,255,0.2))] text-white drop-shadow-[0_8px_30px_rgba(255,105,180,0.45)]'
-    : 'border-[#ff2fa7]/60 bg-[linear-gradient(130deg,rgba(255,255,255,0.95),rgba(255,170,223,0.95),rgba(255,125,185,0.9))] text-[#1b1a1e] drop-shadow-[0_8px_30px_rgba(255,105,180,0.45)]'
+    ? 'border-transparent bg-[linear-gradient(120deg,rgba(255,190,120,0.95),rgba(255,110,175,0.92))] text-white shadow-[0_8px_18px_rgba(255,145,130,0.32)]'
+    : 'border-transparent bg-[linear-gradient(120deg,rgba(255,190,120,0.95),rgba(255,110,175,0.92))] text-[#1b1a1e] shadow-[0_8px_18px_rgba(255,145,130,0.32)]'
   const floatingControlsVisibility = isCartOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
   const smileyFaceSrc = '/Single smile.png'
   const scrollToTopButtonStyles = lightsOff
@@ -255,19 +256,23 @@ const Shop = () => {
   const activeGalleryImages = activeGalleryConcept?.images || []
   const activeGalleryImageSrc = activeGalleryImages[activeGalleryIndex] || null
   const galleryOverlayClass = lightsOff
-    ? 'bg-[#050307]/85 backdrop-blur-sm'
-    : 'bg-black/60 backdrop-blur-sm'
+    ? 'bg-[radial-gradient(circle_at_center,rgba(8,6,18,0.95),rgba(2,1,6,0.9))] backdrop-blur'
+    : 'bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.85),rgba(210,205,230,0.82))] backdrop-blur'
   const galleryPanelClass = lightsOff
-    ? 'border border-white/20 bg-black/30 text-white shadow-[0_50px_140px_rgba(0,0,0,0.65)] backdrop-blur-2xl'
-    : 'border border-white/60 bg-white/40 text-[#1f1b1f] shadow-[0_40px_120px_rgba(31,27,31,0.2)] backdrop-blur-2xl'
-  const galleryControlButtonClass = lightsOff
-    ? 'border-white/30 bg-black/35 text-white hover:bg-black/55'
-    : 'border-[#1f1b1f]/20 bg-white/80 text-[#1f1b1f] hover:bg-white'
+    ? 'border border-white/20 bg-white/5 text-white shadow-[0_55px_160px_rgba(0,0,0,0.7)] backdrop-blur-[22px]'
+    : 'border border-white/60 bg-white/30 text-[#1f1b1f] shadow-[0_45px_140px_rgba(31,27,31,0.18)] backdrop-blur-[22px]'
+  const galleryCloseButtonClass = lightsOff
+    ? 'border-white/35 bg-black/60 text-white hover:bg-black/75'
+    : 'border-white/70 bg-white/70 text-[#1f1b1f] hover:bg-white'
+  const galleryNavButtonBase = 'h-16 w-11 items-center justify-center rounded-full border text-lg transition'
+  const galleryNavButtonClass = lightsOff
+    ? `${galleryNavButtonBase} border-white/25 bg-black/35 text-white hover:bg-black/60 shadow-[0_6px_24px_rgba(0,0,0,0.5)]`
+    : `${galleryNavButtonBase} border-white/70 bg-white/80 text-[#1f1b1f] hover:bg-white shadow-[0_6px_24px_rgba(31,27,31,0.18)]`
   const galleryThumbBaseClass = lightsOff ? 'border-white/20 bg-white/5' : 'border-[#1f1b1f]/15 bg-white'
   const galleryThumbActiveClass = lightsOff ? 'ring-2 ring-white/90' : 'ring-2 ring-[#1f1b1f]'
   const galleryImageShellClass = lightsOff
-    ? 'border-white/15 bg-black/30'
-    : 'border-[#1f1b1f]/10 bg-white'
+    ? 'border-white/20 bg-black/25 shadow-[0_35px_90px_rgba(0,0,0,0.55)]'
+    : 'border-white/70 bg-white shadow-[0_35px_90px_rgba(31,27,31,0.18)]'
 
   const openConceptGallery = (concept, startIndex = 0) => {
     if (!concept?.images || concept.images.length === 0) return
@@ -348,16 +353,16 @@ const Shop = () => {
     const hasConceptImages = conceptImages.length > 0
 
     return (
-      <article key={concept.id} className={`rounded-[32px] p-6 backdrop-blur ${cardShellClass}`}>
+      <article key={concept.id} className={`flex h-full flex-col rounded-[32px] p-6 backdrop-blur ${cardShellClass}`}>
         <button
           type="button"
           onClick={hasConceptImages ? () => openConceptGallery(concept) : undefined}
           disabled={!hasConceptImages}
-          className={`group relative mb-4 flex h-48 w-full items-center justify-center overflow-hidden rounded-[28px] border transition ${
+          className={`group relative mb-4 w-full overflow-hidden rounded-[28px] border transition ${
             lightsOff
               ? 'border-white/15 bg-white/5'
               : 'border-[#1f1b1f]/10 bg-white/70'
-          } ${hasConceptImages ? 'cursor-pointer hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7bd5]' : 'cursor-not-allowed opacity-70'}`}
+          } ${hasConceptImages ? 'cursor-pointer hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7bd5]' : 'cursor-not-allowed opacity-70'} aspect-square flex items-center justify-center`}
           aria-label={hasConceptImages ? `View ${concept.title} gallery` : undefined}
         >
           {primaryImageSrc ? (
@@ -377,63 +382,39 @@ const Shop = () => {
             </span>
           )}
         </button>
-        <p className={`text-[0.6rem] uppercase tracking-[0.38em] ${cardSubtleText}`}>{concept.label}</p>
-        <h2 className={`mt-2 text-xl font-semibold ${lightsOff ? 'text-white' : 'text-[#1f1b1f]'}`}>
+        <div className="flex flex-1 flex-col">
+          <p className={`text-[0.6rem] uppercase tracking-[0.38em] ${cardSubtleText}`}>{concept.label}</p>
+          <h2 className={`mt-2 text-xl font-semibold ${lightsOff ? 'text-white' : 'text-[#1f1b1f]'}`}>
           {concept.title}
         </h2>
-        <p className={`mt-3 text-sm ${cardSubtleText}`}>{concept.blurb}</p>
-        <div className="mt-4 flex flex-col gap-3">
+          <p className={`mt-3 text-sm ${cardSubtleText}`}>{concept.blurb}</p>
+          <div className="mt-4 flex flex-1 flex-col">
           <div className="flex flex-col gap-1">
             <span className={`text-xs uppercase tracking-[0.4em] ${cardSubtleText}`}>Edition</span>
             <span className="text-lg font-semibold tracking-[0.1em]">
               ${concept.price.toLocaleString(undefined, { minimumFractionDigits: 0 })}
             </span>
           </div>
-          {quantity === 0 ? (
-            <button
-              type="button"
-              onClick={() => addToCart(concept)}
-              className={`rounded-full border px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] transition ${cartButtonStyles}`}
-            >
-              Add to Cart
-            </button>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <div
-                className={`flex items-center justify-between rounded-full border px-4 py-2 text-sm ${
-                  lightsOff ? 'border-white/15' : 'border-[#1f1b1f]/10 bg-white/60'
-                }`}
+          <div className="mt-auto flex flex-col gap-3 pt-4">
+            {quantity === 0 ? (
+              <button
+                type="button"
+                onClick={() => addToCart(concept)}
+                className={`${cardActionButtonBase} ${cartButtonStyles}`}
               >
-                <span className="uppercase tracking-[0.3em]">Qty</span>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    className={`px-2 text-lg font-semibold leading-none transition ${quantityButtonStyles}`}
-                    onClick={() => decrementItem(concept.id)}
-                    aria-label="Decrease quantity"
-                  >
-                    -
-                  </button>
-                  <span className="text-base font-semibold">{quantity}</span>
-                  <button
-                    type="button"
-                    className={`px-2 text-lg font-semibold leading-none transition ${quantityButtonStyles}`}
-                    onClick={() => incrementItem(concept.id)}
-                    aria-label="Increase quantity"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
+                Add to Cart
+              </button>
+            ) : (
               <button
                 type="button"
                 onClick={() => removeItem(concept.id)}
-                className="text-xs uppercase tracking-[0.35em] text-[#ff7bd5] transition hover:opacity-80"
+                className={`${cardActionButtonBase} ${cardRemoveButtonStyles}`}
               >
                 Remove item
               </button>
-            </div>
-          )}
+            )}
+          </div>
+        </div>
         </div>
       </article>
     )
@@ -683,7 +664,7 @@ const Shop = () => {
               type="button"
               aria-label="Close gallery"
               onClick={closeConceptGallery}
-              className={`absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border text-lg font-semibold transition ${galleryControlButtonClass}`}
+              className={`absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border text-lg font-semibold transition ${galleryCloseButtonClass}`}
             >
               x
             </button>
@@ -694,16 +675,27 @@ const Shop = () => {
                 <p className={`mt-2 text-sm ${lightsOff ? 'text-white/70' : 'text-[#4f4656]'}`}>{activeGalleryConcept.blurb}</p>
               </div>
               <div className="relative">
-                <div className={`overflow-hidden rounded-[32px] border ${galleryImageShellClass}`}>
-                  {activeGalleryImageSrc ? (
-                    <img
-                      src={activeGalleryImageSrc}
-                      alt={`${activeGalleryConcept.title} image ${activeGalleryIndex + 1} of ${activeGalleryImages.length}`}
-                      className="h-[320px] w-full object-cover sm:h-[420px]"
-                    />
-                  ) : (
-                    <div className="h-[320px] w-full sm:h-[420px]" />
-                  )}
+                <div
+                  className={`relative mx-auto w-full max-w-3xl overflow-hidden rounded-[32px] border ${galleryImageShellClass}`}
+                  style={{ maxHeight: '70vh' }}
+                >
+                  <div className="aspect-square w-full">
+                    {activeGalleryImageSrc ? (
+                      <img
+                        src={activeGalleryImageSrc}
+                        alt={`${activeGalleryConcept.title} image ${activeGalleryIndex + 1} of ${activeGalleryImages.length}`}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className={`h-full w-full bg-gradient-to-br ${
+                          lightsOff
+                            ? 'from-white/15 via-[#ff7bd5]/15 to-transparent'
+                            : 'from-[#f4e7ff]/80 via-[#ffe3f6]/60 to-transparent'
+                        }`}
+                      />
+                    )}
+                  </div>
                 </div>
                 {activeGalleryImages.length > 1 && (
                   <>
@@ -711,7 +703,8 @@ const Shop = () => {
                       type="button"
                       aria-label="View previous image"
                       onClick={showGalleryPrev}
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 rounded-full border px-3 py-2 transition ${galleryControlButtonClass}`}
+                      className={`absolute top-1/2 hidden -translate-y-1/2 sm:flex ${galleryNavButtonClass}`}
+                      style={{ left: '-84px' }}
                     >
                       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -721,7 +714,8 @@ const Shop = () => {
                       type="button"
                       aria-label="View next image"
                       onClick={showGalleryNext}
-                      className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full border px-3 py-2 transition ${galleryControlButtonClass}`}
+                      className={`absolute top-1/2 hidden -translate-y-1/2 sm:flex ${galleryNavButtonClass}`}
+                      style={{ right: '-84px' }}
                     >
                       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -750,6 +744,15 @@ const Shop = () => {
                   ))}
                 </div>
               )}
+              <div className="mt-6 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => addToCart(activeGalleryConcept)}
+                  className={`rounded-full border px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] transition ${cartButtonStyles}`}
+                >
+                  Add to Cart
+                </button>
+              </div>
             </div>
           </section>
         </div>
