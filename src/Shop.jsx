@@ -597,7 +597,9 @@ const Shop = () => {
     const hasModelContent = conceptSlides.some((slide) => slide.type === 'model')
     const isShopifyLinkedConcept = concept.id === 'concept-01'
     const previewImageClass =
-      concept.id === 'concept-01' ? 'object-contain p-6' : 'object-cover'
+      concept.id === 'concept-01'
+        ? 'object-contain p-2 scale-[1.2] transform transition-transform duration-500 group-hover:scale-[1.28]'
+        : 'object-cover'
 
     const formattedPrice =
       typeof concept.price === 'number'
