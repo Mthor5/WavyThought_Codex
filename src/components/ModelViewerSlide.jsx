@@ -1,17 +1,56 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { Canvas, useLoader } from '@react-three/fiber'
-import { OrbitControls, Stage } from '@react-three/drei'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { Canvas } from '@react-three/fiber'
+import { OrbitControls, Stage, useGLTF, useProgress } from '@react-three/drei'
 
-const ModelPrimitive = ({ src }) => {
-  const gltf = useLoader(GLTFLoader, src)
+const preloadedModels = new Set()
+const SUPPORTED_MODEL_EXTENSIONS = ['.glb', '.gltf']
+
+const canPreload = (src) => {
+  if (!src) return false
+  const normalized = src.split('?')[0].toLowerCase()
+  return SUPPORTED_MODEL_EXTENSIONS.some((ext) => normalized.endsWith(ext))
+}
+
+export const preloadModelAsset = (src) => {
+  if (!canPreload(src) || preloadedModels.has(src)) return
+  preloadedModels.add(src)
+  if (typeof window === 'undefined') return
+  try {
+    useGLTF.preload(src)
+  } catch {
+    // Ignore eager preload errors; the Suspense loader will handle real failures.
+  }
+}
+
+const ModelLoadingFallback = ({ isDark }) => {
+  const { progress } = useProgress()
+  const percent = Number.isFinite(progress) ? Math.min(100, Math.round(progress)) : 0
+  const textClass = isDark ? 'text-white/80' : 'text-[#1f1b1f]'
+  const barBg = isDark ? 'bg-white/20' : 'bg-[#1f1b1f]/15'
+  const barFill = isDark ? 'bg-white/70' : 'bg-[#1f1b1f]'
+  return (
+    <div className={`flex h-full w-full flex-col items-center justify-center gap-4 text-[0.65rem] uppercase tracking-[0.35em] ${textClass}`}>
+      <p>Loading 3D</p>
+      <div className={`h-1 w-40 overflow-hidden rounded-full ${barBg}`}>
+        <div className={`${barFill} h-full transition-all duration-300`} style={{ width: `${percent}%` }} />
+      </div>
+    </div>
+  )
+}
+
+const ModelPrimitive = ({ src, onLoaded }) => {
+  const gltf = useGLTF(src)
   const sceneObject = useMemo(() => gltf.scene || gltf.scenes?.[0], [gltf])
+  useEffect(() => {
+    if (sceneObject && typeof onLoaded === 'function') {
+      onLoaded()
+    }
+  }, [sceneObject, onLoaded])
   if (!sceneObject) return null
   return <primitive object={sceneObject} dispose={null} rotation={[Math.PI / 2, Math.PI, Math.PI]} />
 }
 
 const INITIAL_CAMERA = [0, 0, 3.2]
-const INITIAL_TARGET = [0, 0, 0]
 
 const ModelViewerSlide = ({ src, isDark = false }) => {
   const [resetCounter, setResetCounter] = useState(0)
@@ -55,13 +94,7 @@ const ModelViewerSlide = ({ src, isDark = false }) => {
     : 'border-[#1f1b1f]/30 text-[#1f1b1f] hover:bg-white/90'
   return (
     <div className="relative h-full w-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1),transparent)]">
-      <Suspense
-        fallback={
-          <div className="flex h-full w-full items-center justify-center text-[0.65rem] uppercase tracking-[0.35em]">
-            Loading 3D...
-          </div>
-        }
-      >
+      <Suspense fallback={<ModelLoadingFallback isDark={isDark} />}>
         <Canvas
           key={`${src}-${resetCounter}`}
           camera={{ position: INITIAL_CAMERA, fov: 25 }}
@@ -72,7 +105,12 @@ const ModelViewerSlide = ({ src, isDark = false }) => {
           }}
         >
           <Stage environment={isDark ? 'night' : 'city'} intensity={0.8} shadows={false} adjustCamera>
-            <ModelPrimitive src={src} />
+            <ModelPrimitive
+              src={src}
+              onLoaded={() => {
+                preloadModelAsset(src)
+              }}
+            />
           </Stage>
           <OrbitControls ref={controlsRef} enablePan={false} />
         </Canvas>
