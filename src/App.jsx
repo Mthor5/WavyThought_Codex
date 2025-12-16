@@ -102,12 +102,15 @@ const App = () => {
   const lightToggleStyles = lightsOff
     ? 'border-white/60 bg-white/10 text-white hover:bg-white/20'
     : 'border-[#1f1b1f] text-[#1f1b1f] hover:bg-[#1f1b1f] hover:text-white'
+  const desktopFlagPanelStyles = lightsOff
+    ? 'border-white/50 bg-white/10 text-white shadow-[0_18px_45px_rgba(0,0,0,0.45)] hover:bg-white/20 backdrop-blur-xl'
+    : 'border-white/40 bg-white/70 text-[#1f1b1f] shadow-[0_16px_40px_rgba(31,27,31,0.12)] hover:bg-white backdrop-blur-2xl'
   const mobileHandleStyles = lightsOff
     ? 'border-white/50 bg-white/10 text-white/80 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.25)]'
     : 'border-[#1f1b1f]/20 bg-white/40 text-[#1f1b1f] backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.15)]'
   const accountButtonStyles = lightsOff
-    ? 'border-white/60 bg-white/5 text-white hover:bg-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.35)]'
-    : 'border-[#1f1b1f]/15 bg-white/80 text-[#1f1b1f] hover:bg-[#1f1b1f]/5 shadow-[0_12px_40px_rgba(31,27,31,0.15)]'
+    ? 'border-white/60 bg-white/10 text-white hover:bg-white/20 shadow-[0_18px_45px_rgba(0,0,0,0.4)] backdrop-blur-xl'
+    : 'border-white/40 bg-white/70 text-[#1f1b1f] hover:bg-white shadow-[0_16px_40px_rgba(31,27,31,0.12)] backdrop-blur-2xl'
   const accountButtonFocusRing = lightsOff ? 'focus-visible:outline-white/80' : 'focus-visible:outline-[#1f1b1f]/70'
   const accountButtonBaseClasses = `rounded-full border p-2.5 text-xs transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${accountButtonFocusRing}`
   const scrollToTopButtonStyles = lightsOff
@@ -161,7 +164,7 @@ const App = () => {
       onTouchEnd={resetPointer}
       onTouchCancel={resetPointer}
     >
-      <div className="fixed right-4 top-24 z-50 hidden items-center justify-end gap-3 px-6 sm:flex sm:right-6">
+      <div className="fixed right-0 top-24 z-50 hidden items-center gap-3 pl-6 transition-opacity duration-200 sm:flex">
         <a
           href="https://shopify.com/68010213455/account"
           className={`${accountButtonBaseClasses} ${accountButtonStyles}`}
@@ -184,11 +187,12 @@ const App = () => {
         </a>
         <button
           type="button"
+          aria-label={`Toggle lights (${lightsOff ? 'turn on' : 'turn off'})`}
           onClick={toggleLights}
           aria-pressed={lightsOff}
-          className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${lightToggleStyles}`}
+          className={`flex items-center gap-3 rounded-l-full border-y border-l px-5 py-3 text-[0.55rem] font-semibold uppercase tracking-[0.35em] transition ${desktopFlagPanelStyles}`}
         >
-          {lightsOff ? 'Lights On' : 'Lights Off'}
+          <span className="text-[0.6rem] tracking-[0.45em]">{lightsOff ? 'Lights On' : 'Lights Off'}</span>
         </button>
       </div>
       <div className="fixed right-0 top-24 z-50 flex items-center justify-end gap-2 pr-2 sm:hidden">
