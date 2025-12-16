@@ -1,0 +1,179 @@
+export const SHOPIFY_BUY_BUTTON_CONFIG = {
+  scriptUrl: 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js',
+  productId: '7944646787151',
+  domain: 'wu3vyk-k9.myshopify.com',
+  storefrontAccessToken: '6ca44531eca180e9b4594f70cc526427',
+  moneyFormat: '%24%7B%7Bamount%7D%7D',
+  hostIds: {
+    card: 'product-component-1765833870392',
+    modal: 'product-component-1765833870392-modal',
+    ghost: 'product-component-1765833870392-ghost',
+  },
+      }
+
+export const SHOPIFY_PRODUCT_OPTIONS = {
+  product: {
+    styles: {
+      product: {
+        '@media (min-width: 601px)': {
+          'max-width': 'calc(25% - 20px)',
+          'margin-left': '20px',
+          'margin-bottom': '50px',
+        },
+      },
+      button: {
+        'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+        'font-size': '13px',
+        'text-transform': 'uppercase',
+        'letter-spacing': '0.35em',
+        'border-radius': '999px',
+        'padding-top': '14px',
+        'padding-bottom': '14px',
+        'padding-left': '34px',
+        'padding-right': '34px',
+        'border': '1px solid transparent',
+        'background-color': 'transparent',
+        'background-image': 'linear-gradient(120deg, rgba(255,190,120,0.95), rgba(255,110,175,0.92))',
+        'color': '#ffffff',
+        'box-shadow': 'none',
+        'transition': 'transform 200ms ease, opacity 200ms ease',
+        ':hover': {
+          'transform': 'translateY(-1px)',
+          'opacity': '0.9',
+        },
+        ':focus': {
+          'outline': 'none',
+          'box-shadow': '0 0 0 2px rgba(31, 27, 31, 0.35)',
+        },
+      },
+      quantityInput: {
+        'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+        'font-size': '13px',
+        'letter-spacing': '0.15em',
+        'text-transform': 'uppercase',
+        'border-radius': '999px',
+        'padding-top': '12px',
+        'padding-bottom': '12px',
+        'padding-left': '18px',
+        'padding-right': '18px',
+        'border': '1px solid rgba(31,27,31,0.15)',
+        'color': '#1f1b1f',
+        'background-color': 'rgba(255,255,255,0.9)',
+      },
+    },
+    contents: {
+      img: false,
+      title: false,
+      price: false,
+    },
+    text: {
+      button: 'Add to Cart',
+    },
+  },
+  modalProduct: {
+    contents: {
+      img: false,
+      imgWithCarousel: true,
+      button: false,
+      buttonWithQuantity: true,
+    },
+    styles: {
+      product: {
+        'background-color': 'rgba(255,255,255,0.8)',
+        'border': '1px solid rgba(31,27,31,0.15)',
+        'border-radius': '32px',
+        'padding': '12px',
+      },
+      button: {
+        'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+        'font-size': '13px',
+        'text-transform': 'uppercase',
+        'letter-spacing': '0.35em',
+        'border-radius': '999px',
+        'padding-top': '14px',
+        'padding-bottom': '14px',
+        'padding-left': '34px',
+        'padding-right': '34px',
+        'border': '1px solid transparent',
+        'background-color': 'transparent',
+        'background-image': 'linear-gradient(120deg, rgba(255,190,120,0.95), rgba(255,110,175,0.92))',
+        'color': '#1f1b1f',
+        'box-shadow': 'none',
+      },
+      quantityInput: {
+        'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+        'font-size': '13px',
+        'letter-spacing': '0.15em',
+        'text-transform': 'uppercase',
+        'border-radius': '999px',
+        'padding-top': '12px',
+        'padding-bottom': '12px',
+        'padding-left': '18px',
+        'padding-right': '18px',
+        'border': '1px solid rgba(31,27,31,0.15)',
+        'color': '#1f1b1f',
+        'background-color': 'rgba(255,255,255,0.9)',
+      },
+    },
+    text: {
+      button: 'Add to Cart',
+    },
+  },
+  cart: {
+    styles: {
+      cart: {
+        'background-color': '#ffffff',
+        'border': '1px solid rgba(31,27,31,0.12)',
+        'border-radius': '28px',
+        'box-shadow': '0 35px 70px rgba(31,27,31,0.18)',
+      },
+      footer: {
+        'background-color': 'transparent',
+      },
+      title: {
+        'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+        'letter-spacing': '0.25em',
+        'text-transform': 'uppercase',
+        'color': '#1f1b1f',
+      },
+      lineItems: {
+        'color': '#4b3a53',
+      },
+      button: {
+        'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+        'font-size': '13px',
+        'text-transform': 'uppercase',
+        'letter-spacing': '0.35em',
+        'border-radius': '999px',
+        'padding-top': '14px',
+        'padding-bottom': '14px',
+        'padding-left': '34px',
+        'padding-right': '34px',
+        'border': '1px solid transparent',
+        'background-color': 'transparent',
+        'background-image': 'linear-gradient(120deg, rgba(255,190,120,0.95), rgba(255,110,175,0.92))',
+        'color': '#1f1b1f',
+      },
+    },
+    text: {
+      total: 'Subtotal',
+      button: 'Checkout',
+    },
+  },
+  toggle: {
+    styles: {
+      toggle: {
+        'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+        'background-image': 'linear-gradient(120deg, rgba(255,190,120,0.95), rgba(255,110,175,0.92))',
+        'border': '1px solid transparent',
+        'color': '#ffffff',
+        'text-transform': 'uppercase',
+        'letter-spacing': '0.3em',
+      },
+      count: {
+        'font-size': '13px',
+        'color': '#ffffff',
+      },
+    },
+  },
+}

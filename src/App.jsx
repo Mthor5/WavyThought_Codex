@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import Hero from './components/Hero'
+import ShopifyCartGhost from './components/ShopifyCartGhost'
 
 const WorkSamples = lazy(() => import('./components/WorkSamples'))
 const ContactForm = lazy(() => import('./components/ContactForm'))
@@ -177,7 +178,9 @@ const App = () => {
   )
 
   return (
-    <div
+    <>
+      <ShopifyCartGhost />
+      <div
       className={`min-h-screen pt-24 sm:pt-20 ${lightsOff ? 'bg-[#1b1a20] text-white transition-colors' : 'bg-[#fdfcfc] text-[#1f1b1f]'} `}
       onPointerMove={handlePointerMove}
       onPointerDown={handlePointerMove}
@@ -349,7 +352,8 @@ const App = () => {
           <path d="M5 12l7-7 7 7" />
         </svg>
       </button>
-    </div>
+      </div>
+    </>
   )
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './index.css'
+import { SHOPIFY_BUY_BUTTON_CONFIG, SHOPIFY_PRODUCT_OPTIONS } from './config/shopify'
 import ModelViewerSlide from './components/ModelViewerSlide'
 
 const getSystemPrefersDark = () => {
