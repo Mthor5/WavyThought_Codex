@@ -524,11 +524,13 @@ const Shop = () => {
         </div>
       )
     }
+    const isStickerConcept = activeGalleryConcept?.id === 'concept-01'
+    const imageClass = isStickerConcept ? 'h-full w-full object-contain p-6' : 'h-full w-full object-cover'
     return (
       <img
         src={activeGallerySlide.src}
         alt={`${activeGalleryConcept?.title || 'Concept'} slide ${activeGalleryIndex + 1} of ${activeGallerySlides.length}`}
-        className="h-full w-full object-cover"
+        className={imageClass}
       />
     )
   }
