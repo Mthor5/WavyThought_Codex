@@ -24,9 +24,9 @@ const conceptCatalog = [
   {
     id: 'concept-03',
     label: 'Concept 03',
-    title: 'Chromatic Bloom Lamp',
+    title: 'Wavy Lamp 01',
     price: 640,
-    blurb: 'Blooming light sculpture with programmable gradients.',
+    blurb: 'Waves play with the light as you walk around this piece.',
     imageFolder: 'concept-03',
   },
   {
@@ -141,42 +141,21 @@ const Shop = () => {
   const [activeSort, setActiveSort] = useState('relevant')
   const sortMenuRef = useRef(null)
   const shopifyMountRequestRef = useRef(null)
-  const [shopifyPriceRange, setShopifyPriceRange] = useState(null)
+  const [shopifyPriceByConcept, setShopifyPriceByConcept] = useState({})
+  const conceptProductMounts = SHOPIFY_BUY_BUTTON_CONFIG.productMounts || []
+  const shopifyConceptMap = useMemo(() => {
+    const map = new Map()
+    conceptProductMounts.forEach((entry) => {
+      if (entry?.conceptId && entry?.nodeId && entry?.productId) {
+        map.set(entry.conceptId, entry)
+      }
+    })
+    return map
+  }, [conceptProductMounts])
 
   useEffect(() => {
     document.title = 'WavyThought - Shop'
   }, [])
-
-  const shopifyStickerPricing = useMemo(() => {
-    if (!shopifyPriceRange) return null
-    const { min, max, currencyCode } = shopifyPriceRange
-    if (!Number.isFinite(min)) return null
-    const hasDifferentMax = Number.isFinite(max) && max > min + Number.EPSILON
-    const formatValue = (value) => {
-      if (!Number.isFinite(value)) return null
-      const hasDecimals = Math.abs(value % 1) > Number.EPSILON
-      return value.toLocaleString(undefined, {
-        minimumFractionDigits: hasDecimals ? 2 : 0,
-        maximumFractionDigits: hasDecimals ? 2 : 0,
-      })
-    }
-    const formattedMin = formatValue(min)
-    if (!formattedMin) return null
-    const formattedMax = formatValue(max)
-    const currencyPrefix = currencyCode === 'USD' ? '$' : `${currencyCode} `
-    if (hasDifferentMax && formattedMax) {
-      return {
-        min,
-        max,
-        display: `${currencyPrefix}${formattedMin} - ${currencyPrefix}${formattedMax}`,
-      }
-    }
-    return {
-      min,
-      max,
-      display: `${currencyPrefix}${formattedMin}`,
-    }
-  }, [shopifyPriceRange])
 
   useEffect(() => {
     if (!isSortMenuOpen) return undefined
@@ -204,14 +183,14 @@ const Shop = () => {
     let isCancelled = false
     let detachScriptListener = null
     const scriptId = 'wavythought-shopify-buy-sdk'
-    const { hostIds = {}, scriptUrl, domain, storefrontAccessToken, productId, moneyFormat } =
+    const { scriptUrl, domain, storefrontAccessToken, moneyFormat, productMounts = [] } =
       SHOPIFY_BUY_BUTTON_CONFIG
-    const hostIdList = Object.values(hostIds).filter(Boolean)
+    const mountEntries = productMounts.filter((entry) => entry?.nodeId && entry?.productId)
     const shopifyOptions = SHOPIFY_PRODUCT_OPTIONS
 
     const unmountShopifyButtons = () => {
-      hostIdList.forEach((hostId) => {
-        const node = document.getElementById(hostId)
+      mountEntries.forEach((entry) => {
+        const node = document.getElementById(entry.nodeId)
         if (node) {
           delete node.dataset.shopifyMounted
           node.innerHTML = ''
@@ -223,17 +202,21 @@ const Shop = () => {
       if (isCancelled) return
       const ShopifyBuy = window.ShopifyBuy
       if (!ShopifyBuy || !ShopifyBuy.UI) return
-      const targetNodes = hostIdList
-        .map((hostId) => document.getElementById(hostId))
-        .filter((node) => node && node.dataset.shopifyMounted !== 'true')
-      if (targetNodes.length === 0) return
+      const targetEntries = mountEntries
+        .map((entry) => {
+          const node = document.getElementById(entry.nodeId)
+          if (!node || node.dataset.shopifyMounted === 'true') return null
+          return { node, productId: entry.productId }
+        })
+        .filter(Boolean)
+      if (targetEntries.length === 0) return
       const client = ShopifyBuy.buildClient({
         domain,
         storefrontAccessToken,
       })
       ShopifyBuy.UI.onReady(client).then((ui) => {
         if (isCancelled) return
-        targetNodes.forEach((node) => {
+        targetEntries.forEach(({ node, productId }) => {
           if (!node || node.dataset.shopifyMounted === 'true') return
           ui.createComponent('product', {
             id: productId,
@@ -283,11 +266,41 @@ const Shop = () => {
   }, [])
 
   useEffect(() => {
-    const { domain, storefrontAccessToken, productId } = SHOPIFY_BUY_BUTTON_CONFIG
-    if (!domain || !storefrontAccessToken || !productId) return undefined
+    const { domain, storefrontAccessToken } = SHOPIFY_BUY_BUTTON_CONFIG
+    const pricedEntries = conceptProductMounts.filter(
+      (entry) => entry?.conceptId && entry?.productId
+    )
+    if (!domain || !storefrontAccessToken || pricedEntries.length === 0) return undefined
+    const normalizedEntries = pricedEntries.map((entry) => ({
+      conceptId: entry.conceptId,
+      productGid: entry.productId.startsWith('gid://')
+        ? entry.productId
+        : `gid://shopify/Product/${entry.productId}`,
+    }))
+    const uniqueProductGids = [...new Set(normalizedEntries.map((entry) => entry.productGid))]
+    if (uniqueProductGids.length === 0) return undefined
     const controller = new AbortController()
     let isMounted = true
-    const productGid = productId.startsWith('gid://') ? productId : `gid://shopify/Product/${productId}`
+
+    const formatDisplay = (min, max, currencyCode) => {
+      const hasDifferentMax = Number.isFinite(max) && max > min + Number.EPSILON
+      const formatValue = (value) => {
+        if (!Number.isFinite(value)) return null
+        const hasDecimals = Math.abs(value % 1) > Number.EPSILON
+        return value.toLocaleString(undefined, {
+          minimumFractionDigits: hasDecimals ? 2 : 0,
+          maximumFractionDigits: hasDecimals ? 2 : 0,
+        })
+      }
+      const formattedMin = formatValue(min)
+      if (!formattedMin) return null
+      const formattedMax = formatValue(max)
+      const prefix = currencyCode === 'USD' ? '$' : `${currencyCode} `
+      if (hasDifferentMax && formattedMax) {
+        return `${prefix}${formattedMin} - ${prefix}${formattedMax}`
+      }
+      return `${prefix}${formattedMin}`
+    }
 
     const fetchShopifyPricing = async () => {
       try {
@@ -299,39 +312,61 @@ const Shop = () => {
           },
           body: JSON.stringify({
             query: `
-              query GetProductPrice($id: ID!) {
-                product(id: $id) {
-                  priceRange {
-                    minVariantPrice {
-                      amount
-                      currencyCode
-                    }
-                    maxVariantPrice {
-                      amount
-                      currencyCode
+              query GetProductPrices($ids: [ID!]!) {
+                nodes(ids: $ids) {
+                  ... on Product {
+                    id
+                    priceRange {
+                      minVariantPrice {
+                        amount
+                        currencyCode
+                      }
+                      maxVariantPrice {
+                        amount
+                        currencyCode
+                      }
                     }
                   }
                 }
               }
             `,
-            variables: { id: productGid },
+            variables: { ids: uniqueProductGids },
           }),
           signal: controller.signal,
         })
         if (!response.ok) {
           throw new Error(`Failed to fetch Shopify pricing: ${response.status}`)
         }
-        const result = await response.json()
-        const priceRange = result?.data?.product?.priceRange
-        if (!priceRange || !isMounted) return
-        setShopifyPriceRange({
-          min: parseFloat(priceRange?.minVariantPrice?.amount ?? 'NaN'),
-          max: parseFloat(priceRange?.maxVariantPrice?.amount ?? 'NaN'),
-          currencyCode:
-            priceRange?.minVariantPrice?.currencyCode ||
-            priceRange?.maxVariantPrice?.currencyCode ||
-            'USD',
+        const json = await response.json()
+        const nodes = json?.data?.nodes || []
+        const productPriceMap = new Map()
+        nodes.forEach((node) => {
+          if (!node?.id || !node?.priceRange?.minVariantPrice) return
+          const minAmount = Number.parseFloat(node.priceRange.minVariantPrice.amount)
+          const maxAmount = Number.parseFloat(
+            node.priceRange.maxVariantPrice?.amount ?? node.priceRange.minVariantPrice.amount
+          )
+          if (!Number.isFinite(minAmount)) return
+          productPriceMap.set(node.id, {
+            min: minAmount,
+            max: Number.isFinite(maxAmount) ? maxAmount : minAmount,
+            currencyCode:
+              node.priceRange.minVariantPrice.currencyCode ||
+              node.priceRange.maxVariantPrice?.currencyCode ||
+              'USD',
+          })
         })
+        if (!isMounted) return
+        const nextMap = {}
+        normalizedEntries.forEach(({ conceptId, productGid }) => {
+          const priceInfo = productPriceMap.get(productGid)
+          if (!priceInfo) return
+          const display = formatDisplay(priceInfo.min, priceInfo.max, priceInfo.currencyCode)
+          if (display) {
+            nextMap[conceptId] = { ...priceInfo, display }
+          }
+        })
+        setShopifyPriceByConcept((prev) => ({ ...prev, ...nextMap }))
       } catch (error) {
         if (controller.signal.aborted) return
         console.error('Unable to load Shopify pricing', error)
@@ -344,7 +379,7 @@ const Shop = () => {
       isMounted = false
       controller.abort()
     }
-  }, [])
+  }, [conceptProductMounts])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
@@ -405,10 +440,10 @@ const Shop = () => {
   }, [activeGalleryConcept])
 
   useEffect(() => {
-    if (activeGalleryConcept?.id === 'concept-01') {
+    if (activeGalleryConcept && shopifyConceptMap.has(activeGalleryConcept.id)) {
       shopifyMountRequestRef.current?.()
     }
-  }, [activeGalleryConcept])
+  }, [activeGalleryConcept, shopifyConceptMap])
 
   const bannerCopy =
     'Limited experiments and texture studies. Custom project requests stay open via the main form.'
@@ -421,6 +456,11 @@ const Shop = () => {
   const mobileHandleStyles = lightsOff
     ? 'border-white/50 bg-white/10 text-white/80 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.25)]'
     : 'border-[#1f1b1f]/20 bg-white/40 text-[#1f1b1f] backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.15)]'
+  const accountButtonStyles = lightsOff
+    ? 'border-white/60 bg-white/10 text-white hover:bg-white/20 shadow-[0_18px_45px_rgba(0,0,0,0.4)] backdrop-blur-xl'
+    : 'border-white/40 bg-white/70 text-[#1f1b1f] hover:bg-white shadow-[0_16px_40px_rgba(31,27,31,0.12)] backdrop-blur-2xl'
+  const accountButtonFocusRing = lightsOff ? 'focus-visible:outline-white/80' : 'focus-visible:outline-[#1f1b1f]/70'
+  const accountButtonBaseClasses = `rounded-full border p-2.5 text-xs transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${accountButtonFocusRing}`
   const pageBackground = lightsOff ? 'bg-[#1b1a20] text-white' : 'bg-[#fdfcfc] text-[#1f1b1f]'
   const heroMutedText = lightsOff ? 'text-white/70' : 'text-[#3c3c3c]'
   const infoPanelClass = lightsOff
@@ -451,8 +491,9 @@ const Shop = () => {
     : 'pointer-events-none opacity-0 -translate-y-2'
 
   const getConceptPriceValue = (concept) => {
-    if (concept.id === 'concept-01' && typeof shopifyStickerPricing?.min === 'number') {
-      return shopifyStickerPricing.min
+    const entry = shopifyPriceByConcept[concept.id]
+    if (entry && typeof entry.min === 'number') {
+      return entry.min
     }
     return typeof concept.price === 'number' ? concept.price : Number.POSITIVE_INFINITY
   }
@@ -465,7 +506,7 @@ const Shop = () => {
       return [...conceptCatalog].sort((a, b) => getConceptPriceValue(b) - getConceptPriceValue(a))
     }
     return conceptCatalog
-  }, [activeSort, shopifyStickerPricing])
+  }, [activeSort, shopifyPriceByConcept])
 
   const currentSortLabel =
     sortOptions.find((option) => option.value === activeSort)?.label || 'Most Relevant'
@@ -600,7 +641,9 @@ const Shop = () => {
     const primaryImageSrc = primaryImageSlide?.src || null
     const hasGalleryContent = conceptSlides.length > 0
     const hasModelContent = conceptSlides.some((slide) => slide.type === 'model')
-    const isShopifyLinkedConcept = concept.id === 'concept-01'
+    const shopifyMount = shopifyConceptMap.get(concept.id)
+    const shopifyPricingEntry = shopifyPriceByConcept[concept.id]
+    const isShopifyLinkedConcept = Boolean(shopifyMount)
     const previewImageClass =
       concept.id === 'concept-01'
         ? 'object-contain p-2 scale-[1.2] transform transition-transform duration-500 group-hover:scale-[1.28]'
@@ -610,10 +653,7 @@ const Shop = () => {
       typeof concept.price === 'number'
         ? concept.price.toLocaleString(undefined, { minimumFractionDigits: 0 })
         : concept.price
-    const priceDisplay =
-      isShopifyLinkedConcept && shopifyStickerPricing?.display
-        ? shopifyStickerPricing.display
-        : `$${formattedPrice}`
+    const priceDisplay = shopifyPricingEntry?.display || `$${formattedPrice}`
 
     return (
       <article key={concept.id} className={`flex h-full flex-col rounded-[32px] p-6 backdrop-blur ${cardShellClass}`}>
@@ -673,7 +713,7 @@ const Shop = () => {
             {isShopifyLinkedConcept ? (
               <div className="w-full" aria-live="polite">
                 <div
-                  id={SHOPIFY_BUY_BUTTON_CONFIG.hostIds?.card}
+                  id={shopifyMount?.nodeId}
                   className="shopify-buy-button-host"
                   style={{ minHeight: '54px', overflow: 'visible', padding: '6px 0' }}
                 />
@@ -701,6 +741,26 @@ const Shop = () => {
         </a>
       </div>
       <div className="fixed right-0 top-24 z-30 hidden items-center gap-3 pl-6 transition-opacity duration-200 sm:flex">
+        <a
+          href="https://shopify.com/68010213455/account"
+          className={`${accountButtonBaseClasses} ${accountButtonStyles}`}
+          aria-label="Customer account"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 13c2.97 0 5.38-2.41 5.38-5.38S14.97 2.25 12 2.25 6.62 4.66 6.62 7.62 9.03 13 12 13Z" />
+            <path d="M3.75 21.75a8.25 8.25 0 0 1 16.5 0" />
+          </svg>
+        </a>
         <button
           type="button"
           aria-label={`Toggle lights (${lightsOff ? 'turn on' : 'turn off'})`}
@@ -712,6 +772,26 @@ const Shop = () => {
         </button>
       </div>
       <div className="fixed right-0 top-24 z-30 flex items-center justify-end gap-2 transition-opacity duration-200 sm:hidden">
+        <a
+          href="https://shopify.com/68010213455/account"
+          className={`${accountButtonBaseClasses} ${accountButtonStyles}`}
+          aria-label="Customer account"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 13c2.97 0 5.38-2.41 5.38-5.38S14.97 2.25 12 2.25 6.62 4.66 6.62 7.62 9.03 13 12 13Z" />
+            <path d="M3.75 21.75a8.25 8.25 0 0 1 16.5 0" />
+          </svg>
+        </a>
         <button
           type="button"
           aria-label={`Toggle lights (${lightsOff ? 'turn on' : 'turn off'})`}

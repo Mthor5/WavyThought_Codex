@@ -5,10 +5,21 @@ export const SHOPIFY_BUY_BUTTON_CONFIG = {
   storefrontAccessToken: '6ca44531eca180e9b4594f70cc526427',
   moneyFormat: '%24%7B%7Bamount%7D%7D',
   hostIds: {
-    card: 'product-component-1765833870392',
     modal: 'product-component-1765833870392-modal',
     ghost: 'product-component-1765833870392-ghost',
   },
+  productMounts: [
+    {
+      conceptId: 'concept-01',
+      productId: '7944646787151',
+      nodeId: 'product-component-1765833870392',
+    },
+    {
+      conceptId: 'concept-03',
+      productId: '7939954409551',
+      nodeId: 'product-component-1765863659143',
+    },
+  ],
       }
 
 export const SHOPIFY_PRODUCT_OPTIONS = {
