@@ -1,53 +1,19 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import Hero from './components/Hero'
 import ShopifyCartGhost from './components/ShopifyCartGhost'
+import useLights from './hooks/useLights'
 
 const WorkSamples = lazy(() => import('./components/WorkSamples'))
 const ContactForm = lazy(() => import('./components/ContactForm'))
 
-const getSystemPrefersDark = () => {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-}
-
 const App = () => {
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
-  const [lightsOff, setLightsOff] = useState(() => getSystemPrefersDark())
+  const { lightsOff, toggleLights } = useLights()
   const [showScrollToTop, setShowScrollToTop] = useState(false)
   const [reduceEffects, setReduceEffects] = useState(false)
 
   useEffect(() => {
     document.title = 'WavyThought'
-  }, [])
-
-  useEffect(() => {
-    const { body } = document
-    if (!body) return undefined
-    body.classList.toggle('lights-off', lightsOff)
-    return () => {
-      body.classList.remove('lights-off')
-    }
-  }, [lightsOff])
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined
-    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleColorSchemeChange = (event) => {
-      setLightsOff(event.matches)
-    }
-    setLightsOff(colorSchemeQuery.matches)
-    if (typeof colorSchemeQuery.addEventListener === 'function') {
-      colorSchemeQuery.addEventListener('change', handleColorSchemeChange)
-    } else if (typeof colorSchemeQuery.addListener === 'function') {
-      colorSchemeQuery.addListener(handleColorSchemeChange)
-    }
-    return () => {
-      if (typeof colorSchemeQuery.removeEventListener === 'function') {
-        colorSchemeQuery.removeEventListener('change', handleColorSchemeChange)
-      } else if (typeof colorSchemeQuery.removeListener === 'function') {
-        colorSchemeQuery.removeListener(handleColorSchemeChange)
-      }
-    }
   }, [])
 
   useEffect(() => {
@@ -133,13 +99,17 @@ const App = () => {
   }
 
   const resetPointer = () => setPointer({ x: 0, y: 0 })
-  const toggleLights = () => setLightsOff((prev) => !prev)
   const lightToggleStyles = lightsOff
     ? 'border-white/60 bg-white/10 text-white hover:bg-white/20'
     : 'border-[#1f1b1f] text-[#1f1b1f] hover:bg-[#1f1b1f] hover:text-white'
   const mobileHandleStyles = lightsOff
     ? 'border-white/50 bg-white/10 text-white/80 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.25)]'
     : 'border-[#1f1b1f]/20 bg-white/40 text-[#1f1b1f] backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.15)]'
+  const accountButtonStyles = lightsOff
+    ? 'border-white/60 bg-white/5 text-white hover:bg-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.35)]'
+    : 'border-[#1f1b1f]/15 bg-white/80 text-[#1f1b1f] hover:bg-[#1f1b1f]/5 shadow-[0_12px_40px_rgba(31,27,31,0.15)]'
+  const accountButtonFocusRing = lightsOff ? 'focus-visible:outline-white/80' : 'focus-visible:outline-[#1f1b1f]/70'
+  const accountButtonBaseClasses = `rounded-full border p-2.5 text-xs transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${accountButtonFocusRing}`
   const scrollToTopButtonStyles = lightsOff
     ? 'border-white/40 bg-white/10 text-white backdrop-blur-lg shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:bg-white/20'
     : 'border-[#1f1b1f]/15 bg-[#fdfcfc]/40 text-[#1f1b1f] backdrop-blur-lg shadow-[0_12px_40px_rgba(31,27,31,0.2)] hover:bg-[#fdfcfc]/60'
@@ -191,7 +161,27 @@ const App = () => {
       onTouchEnd={resetPointer}
       onTouchCancel={resetPointer}
     >
-      <div className="fixed right-4 top-24 z-50 hidden justify-end px-6 sm:flex sm:right-6">
+      <div className="fixed right-4 top-24 z-50 hidden items-center justify-end gap-3 px-6 sm:flex sm:right-6">
+        <a
+          href="https://shopify.com/68010213455/account"
+          className={`${accountButtonBaseClasses} ${accountButtonStyles}`}
+          aria-label="Customer account"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 13c2.97 0 5.38-2.41 5.38-5.38S14.97 2.25 12 2.25 6.62 4.66 6.62 7.62 9.03 13 12 13Z" />
+            <path d="M3.75 21.75a8.25 8.25 0 0 1 16.5 0" />
+          </svg>
+        </a>
         <button
           type="button"
           onClick={toggleLights}
@@ -201,7 +191,27 @@ const App = () => {
           {lightsOff ? 'Lights On' : 'Lights Off'}
         </button>
       </div>
-      <div className="fixed right-0 top-24 z-50 flex items-center justify-end sm:hidden">
+      <div className="fixed right-0 top-24 z-50 flex items-center justify-end gap-2 pr-2 sm:hidden">
+        <a
+          href="https://shopify.com/68010213455/account"
+          className={`${accountButtonBaseClasses} ${accountButtonStyles}`}
+          aria-label="Customer account"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 13c2.97 0 5.38-2.41 5.38-5.38S14.97 2.25 12 2.25 6.62 4.66 6.62 7.62 9.03 13 12 13Z" />
+            <path d="M3.75 21.75a8.25 8.25 0 0 1 16.5 0" />
+          </svg>
+        </a>
         <button
           type="button"
           aria-label={`Toggle lights (${lightsOff ? 'turn on' : 'turn off'})`}

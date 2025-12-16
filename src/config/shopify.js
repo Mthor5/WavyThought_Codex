@@ -31,6 +31,7 @@ export const SHOPIFY_PRODUCT_OPTIONS = {
         'padding-bottom': '14px',
         'padding-left': '34px',
         'padding-right': '34px',
+        'width': '100%',
         'border': '1px solid transparent',
         'background-color': 'transparent',
         'background-image': 'linear-gradient(120deg, rgba(255,190,120,0.95), rgba(255,110,175,0.92))',
@@ -68,6 +69,30 @@ export const SHOPIFY_PRODUCT_OPTIONS = {
     },
     text: {
       button: 'Add to Cart',
+    },
+  },
+  option: {
+    styles: {
+      select: {
+        'font-family': "Space Grotesk, 'Helvetica Neue', sans-serif",
+        'font-size': '10px',
+        'letter-spacing': '0.2em',
+        'text-transform': 'uppercase',
+        'border-radius': '999px',
+        'padding-top': '12px',
+        'padding-bottom': '12px',
+        'padding-left': '20px',
+        'padding-right': '44px',
+        'border': '1px solid rgba(31,27,31,0.2)',
+        'background-color': 'rgba(255,255,255,0.85)',
+        'color': '#1f1b1f',
+        'box-shadow': '0 12px 30px rgba(31,27,31,0.12)',
+      },
+      wrapper: {
+        'border-radius': '999px',
+        'overflow': 'hidden',
+        'background-color': 'transparent',
+      },
     },
   },
   modalProduct: {

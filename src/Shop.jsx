@@ -1,20 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './index.css'
 import { SHOPIFY_BUY_BUTTON_CONFIG, SHOPIFY_PRODUCT_OPTIONS } from './config/shopify'
-import ModelViewerSlide from './components/ModelViewerSlide'
-
-const getSystemPrefersDark = () => {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return true
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-}
+import ModelViewerSlide, { preloadModelAsset } from './components/ModelViewerSlide'
+import useLights from './hooks/useLights'
 
 const conceptCatalog = [
   {
     id: 'concept-01',
     label: 'Concept 01',
-    title: '6" WavyThought Sticker',
+    title: 'WavyThought Logo Sticker',
     price: 6,
-    blurb: '6" matte vinyl sticker, perfect for giving your objects some wavy vibes.',
+    blurb: '4" or 6" vinyl sticker, perfect for giving your objects some wavy vibes.',
     imageFolder: 'concept-01',
   },
   {
@@ -90,6 +86,10 @@ Object.keys(conceptAssetsByFolder).forEach((folderKey) => {
   bucket.models = bucket.models.sort((a, b) => a.path.localeCompare(b.path)).map((entry) => entry.url)
 })
 
+Object.values(conceptAssetsByFolder).forEach(({ models }) => {
+  models.forEach((src) => preloadModelAsset(src))
+})
+
 const getConceptAssets = (concept) => {
   if (!concept) return { images: [], models: [] }
   const folder = concept.imageFolder
@@ -133,7 +133,7 @@ const sortOptions = [
 ]
 
 const Shop = () => {
-  const [lightsOff, setLightsOff] = useState(() => getSystemPrefersDark())
+  const { lightsOff, toggleLights } = useLights({ defaultDark: true })
   const [showScrollToTop, setShowScrollToTop] = useState(false)
   const [activeGalleryConcept, setActiveGalleryConcept] = useState(null)
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0)
@@ -141,40 +141,42 @@ const Shop = () => {
   const [activeSort, setActiveSort] = useState('relevant')
   const sortMenuRef = useRef(null)
   const shopifyMountRequestRef = useRef(null)
+  const [shopifyPriceRange, setShopifyPriceRange] = useState(null)
 
   useEffect(() => {
     document.title = 'WavyThought - Shop'
-  }, [lightsOff])
+  }, [])
 
-  useEffect(() => {
-    const { body } = document
-    if (!body) return undefined
-    body.classList.toggle('lights-off', lightsOff)
-    return () => {
-      body.classList.remove('lights-off')
+  const shopifyStickerPricing = useMemo(() => {
+    if (!shopifyPriceRange) return null
+    const { min, max, currencyCode } = shopifyPriceRange
+    if (!Number.isFinite(min)) return null
+    const hasDifferentMax = Number.isFinite(max) && max > min + Number.EPSILON
+    const formatValue = (value) => {
+      if (!Number.isFinite(value)) return null
+      const hasDecimals = Math.abs(value % 1) > Number.EPSILON
+      return value.toLocaleString(undefined, {
+        minimumFractionDigits: hasDecimals ? 2 : 0,
+        maximumFractionDigits: hasDecimals ? 2 : 0,
+      })
     }
-  }, [lightsOff])
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined
-    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleColorSchemeChange = (event) => {
-      setLightsOff(event.matches)
-    }
-    setLightsOff(colorSchemeQuery.matches)
-    if (typeof colorSchemeQuery.addEventListener === 'function') {
-      colorSchemeQuery.addEventListener('change', handleColorSchemeChange)
-    } else if (typeof colorSchemeQuery.addListener === 'function') {
-      colorSchemeQuery.addListener(handleColorSchemeChange)
-    }
-    return () => {
-      if (typeof colorSchemeQuery.removeEventListener === 'function') {
-        colorSchemeQuery.removeEventListener('change', handleColorSchemeChange)
-      } else if (typeof colorSchemeQuery.removeListener === 'function') {
-        colorSchemeQuery.removeListener(handleColorSchemeChange)
+    const formattedMin = formatValue(min)
+    if (!formattedMin) return null
+    const formattedMax = formatValue(max)
+    const currencyPrefix = currencyCode === 'USD' ? '$' : `${currencyCode} `
+    if (hasDifferentMax && formattedMax) {
+      return {
+        min,
+        max,
+        display: `${currencyPrefix}${formattedMin} - ${currencyPrefix}${formattedMax}`,
       }
     }
-  }, [])
+    return {
+      min,
+      max,
+      display: `${currencyPrefix}${formattedMin}`,
+    }
+  }, [shopifyPriceRange])
 
   useEffect(() => {
     if (!isSortMenuOpen) return undefined
@@ -281,6 +283,70 @@ const Shop = () => {
   }, [])
 
   useEffect(() => {
+    const { domain, storefrontAccessToken, productId } = SHOPIFY_BUY_BUTTON_CONFIG
+    if (!domain || !storefrontAccessToken || !productId) return undefined
+    const controller = new AbortController()
+    let isMounted = true
+    const productGid = productId.startsWith('gid://') ? productId : `gid://shopify/Product/${productId}`
+
+    const fetchShopifyPricing = async () => {
+      try {
+        const response = await fetch(`https://${domain}/api/2023-04/graphql.json`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Storefront-Access-Token': storefrontAccessToken,
+          },
+          body: JSON.stringify({
+            query: `
+              query GetProductPrice($id: ID!) {
+                product(id: $id) {
+                  priceRange {
+                    minVariantPrice {
+                      amount
+                      currencyCode
+                    }
+                    maxVariantPrice {
+                      amount
+                      currencyCode
+                    }
+                  }
+                }
+              }
+            `,
+            variables: { id: productGid },
+          }),
+          signal: controller.signal,
+        })
+        if (!response.ok) {
+          throw new Error(`Failed to fetch Shopify pricing: ${response.status}`)
+        }
+        const result = await response.json()
+        const priceRange = result?.data?.product?.priceRange
+        if (!priceRange || !isMounted) return
+        setShopifyPriceRange({
+          min: parseFloat(priceRange?.minVariantPrice?.amount ?? 'NaN'),
+          max: parseFloat(priceRange?.maxVariantPrice?.amount ?? 'NaN'),
+          currencyCode:
+            priceRange?.minVariantPrice?.currencyCode ||
+            priceRange?.maxVariantPrice?.currencyCode ||
+            'USD',
+        })
+      } catch (error) {
+        if (controller.signal.aborted) return
+        console.error('Unable to load Shopify pricing', error)
+      }
+    }
+
+    fetchShopifyPricing()
+
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
+  }, [])
+
+  useEffect(() => {
     if (typeof window === 'undefined') return undefined
     const handleScroll = () => {
       setShowScrollToTop(window.scrollY > 200)
@@ -381,15 +447,22 @@ const Shop = () => {
     ? 'pointer-events-auto opacity-100 translate-y-0'
     : 'pointer-events-none opacity-0 -translate-y-2'
 
+  const getConceptPriceValue = (concept) => {
+    if (concept.id === 'concept-01' && typeof shopifyStickerPricing?.min === 'number') {
+      return shopifyStickerPricing.min
+    }
+    return typeof concept.price === 'number' ? concept.price : Number.POSITIVE_INFINITY
+  }
+
   const sortedConcepts = useMemo(() => {
     if (activeSort === 'price-low-high') {
-      return [...conceptCatalog].sort((a, b) => a.price - b.price)
+      return [...conceptCatalog].sort((a, b) => getConceptPriceValue(a) - getConceptPriceValue(b))
     }
     if (activeSort === 'price-high-low') {
-      return [...conceptCatalog].sort((a, b) => b.price - a.price)
+      return [...conceptCatalog].sort((a, b) => getConceptPriceValue(b) - getConceptPriceValue(a))
     }
     return conceptCatalog
-  }, [activeSort])
+  }, [activeSort, shopifyStickerPricing])
 
   const currentSortLabel =
     sortOptions.find((option) => option.value === activeSort)?.label || 'Most Relevant'
@@ -523,11 +596,17 @@ const Shop = () => {
     const hasGalleryContent = conceptSlides.length > 0
     const hasModelContent = conceptSlides.some((slide) => slide.type === 'model')
     const isShopifyLinkedConcept = concept.id === 'concept-01'
+    const previewImageClass =
+      concept.id === 'concept-01' ? 'object-contain p-6' : 'object-cover'
 
     const formattedPrice =
       typeof concept.price === 'number'
         ? concept.price.toLocaleString(undefined, { minimumFractionDigits: 0 })
         : concept.price
+    const priceDisplay =
+      isShopifyLinkedConcept && shopifyStickerPricing?.display
+        ? shopifyStickerPricing.display
+        : `$${formattedPrice}`
 
     return (
       <article key={concept.id} className={`flex h-full flex-col rounded-[32px] p-6 backdrop-blur ${cardShellClass}`}>
@@ -543,7 +622,12 @@ const Shop = () => {
           aria-label={hasGalleryContent ? `View ${concept.title} gallery` : undefined}
         >
           {primaryImageSrc ? (
-            <img src={primaryImageSrc} alt={`${concept.title} preview`} className="h-full w-full object-cover" loading="lazy" />
+            <img
+              src={primaryImageSrc}
+              alt={`${concept.title} preview`}
+              className={`h-full w-full ${previewImageClass}`}
+              loading="lazy"
+            />
           ) : (
             <div
               className={`h-full w-full bg-gradient-to-br ${
@@ -576,9 +660,7 @@ const Shop = () => {
           <p className={`mt-3 text-sm ${cardSubtleText}`}>{concept.blurb}</p>
           <div className="mt-4 flex flex-1 flex-col">
           <div className="flex flex-col gap-1">
-            <span className="text-lg font-semibold tracking-[0.1em]">
-              ${formattedPrice}
-            </span>
+            <span className="text-lg font-semibold tracking-[0.1em]">{priceDisplay}</span>
           </div>
           <div className="mt-auto flex flex-col gap-3 pt-4">
             {isShopifyLinkedConcept ? (
@@ -614,7 +696,7 @@ const Shop = () => {
       <div className="fixed right-4 top-24 z-30 hidden items-center gap-3 px-6 transition-opacity duration-200 sm:flex sm:right-6">
         <button
           type="button"
-          onClick={() => setLightsOff((prev) => !prev)}
+          onClick={toggleLights}
           aria-pressed={lightsOff}
           className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${lightToggleStyles}`}
         >
@@ -625,7 +707,7 @@ const Shop = () => {
         <button
           type="button"
           aria-label={`Toggle lights (${lightsOff ? 'turn on' : 'turn off'})`}
-          onClick={() => setLightsOff((prev) => !prev)}
+          onClick={toggleLights}
           aria-pressed={lightsOff}
           className={`rounded-l-full border border-r-0 px-1 py-3 text-[10px] font-semibold uppercase tracking-[0.4em] transition ${mobileHandleStyles}`}
           style={{ writingMode: 'vertical-rl' }}
